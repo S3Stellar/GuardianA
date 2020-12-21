@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">GuardianA</string>
+    <string name="slide_one_top_text">Welcome to Guardian A!</string>
+    <string name="slide_one_down_text">Your safe ride is about to begin.</string>
+    <string name="slide_two_top_text">Set your phone on the holder.</string>
+    <string name="slide_two_down_text">Calibrate your phone to see the way clearly.</string>
+    <string name="slide_three_top_text">Choose your destination.</string>
+    <string name="slide_three_down_text">Type the address of your destination\n and get moving!</string>
+    <string name="slide_four_top_text"> - Permissions -</string>
+    <string name="slide_four_down_text">In order for the app to work\n we may ask your permission!</string>
+    <string name="ok">OK</string>
+</resources>
