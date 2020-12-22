@@ -18,11 +18,26 @@
     <style name="Theme.SplashScreen" parent="Theme.MaterialComponents.DayNight.NoActionBar">
 <!--        <item name="windowActionBar">false</item>
         <item name ="windowNoTitle">true</item>
-        <item name="android:windowDisablePreview">true</item>-->
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowFullscreen">true</item>-->
 
+        <item name="colorPrimaryDark">@color/splash_screen_bg_color</item>
         <item name="android:windowBackground">@drawable/splash_screen</item>
-        <item name="android:windowFullscreen">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
     </style>
 
+
+    <!-- Splash screen theme -->
+    <style name="Theme.LoginScreen" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!--        <item name="windowActionBar">false</item>
+                <item name ="windowNoTitle">true</item>
+                <item name="android:windowDisablePreview">true</item>
+                <item name="android:windowFullscreen">true</item>-->
+
+        <item name="colorPrimaryDark">@color/splash_screen_bg_color</item>
+
+        <item name="android:windowBackground">@drawable/splash_screen</item>
+        <!--<item name="android:windowBackground">@color/slide_one</item>-->
+        <item name="android:windowTranslucentNavigation">true</item>
+    </style>
 </resources>

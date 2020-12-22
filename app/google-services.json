@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "251393833753",
+    "project_id": "guardiana-6388e",
+    "storage_bucket": "guardiana-6388e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:251393833753:android:f670066d2b4b490468a388",
+        "android_client_info": {
+          "package_name": "com.example.guardiana"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "251393833753-dglnbr9m7372nor8i3qg32muru8cv4nl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.guardiana",
+            "certificate_hash": "b7ba7e0a52bb4a6cea694e26eeaab06866bb058a"
+          }
+        },
+        {
+          "client_id": "251393833753-hpd7ai30di2p1hodbuh8a2uvs2rpa3d6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_QxgmOTm-c5Q7S09oB1-q3HJiq9lEhaw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "251393833753-hpd7ai30di2p1hodbuh8a2uvs2rpa3d6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
