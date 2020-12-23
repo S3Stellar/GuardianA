@@ -1,17 +1,13 @@
 package com.example.guardiana;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.firebase.ui.auth.AuthMethodPickerLayout;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -20,11 +16,13 @@ import java.util.List;
 
 public class SignInActivity extends AppCompatActivity {
 
+    private PreferencesManager manager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
-
+        manager = new PreferencesManager(this);
         // Choose authentication providers
         List<AuthUI.IdpConfig> providers = Arrays.asList(
                 new AuthUI.IdpConfig.EmailBuilder().build(),
@@ -41,12 +39,12 @@ public class SignInActivity extends AppCompatActivity {
                 .build();
 
 
-// Create and launch sign-in intent
+        // Create and launch sign-in intent
         startActivityForResult(
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
                         .setAvailableProviders(providers)
-                        // For testing
+                        // For testing use false, change later to true
                         .setIsSmartLockEnabled(false)
                         .setAuthMethodPickerLayout(customLayout)
                         //.setTheme(R.style.Theme_LoginScreen)
@@ -64,8 +62,15 @@ public class SignInActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 // Successfully signed in
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                if (user != null) {
+                    manager.setLoggedIn(true);
+                } else {
+                    manager.setLoggedIn(false);
+                }
+                finish();
                 // ...
             } else {
+                manager.setLoggedIn(false);
                 // Sign in failed. If response is null the user canceled the
                 // sign-in flow using the back button. Otherwise check
                 // response.getError().getErrorCode() and handle the error.
@@ -75,14 +80,7 @@ public class SignInActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        AuthUI.getInstance()
-                .signOut(this)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    public void onComplete(@NonNull Task<Void> task) {
-                        Log.i("TAG", "onComplete: ");
-                    }
-                });
+    public void onBackPressed() {
+
     }
 }
