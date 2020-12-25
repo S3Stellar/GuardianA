@@ -45,9 +45,9 @@ public class SignInActivity extends AppCompatActivity {
                         .createSignInIntentBuilder()
                         .setAvailableProviders(providers)
                         // For testing use false, change later to true
-                        .setIsSmartLockEnabled(false)
-                        .setAuthMethodPickerLayout(customLayout)
-                        //.setTheme(R.style.Theme_LoginScreen)
+                        .setIsSmartLockEnabled(true)
+                        //.setAuthMethodPickerLayout(customLayout)
+                        .setTheme(R.style.Theme_LoginScreen)
                         .build(),
                 100);
     }

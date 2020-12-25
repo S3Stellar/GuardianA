@@ -17,31 +17,36 @@
         android:theme="@style/Theme.GuardianA">
 
         <!-- Splash Screen Activity -->
-<!--        <activity-->
-<!--            android:name=".SplashScreen"-->
-<!--            android:theme="@style/Theme.SplashScreen">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MAIN" />-->
-<!--                <category android:name="android.intent.category.LAUNCHER" />-->
-<!--            </intent-filter>-->
-<!--        </activity>-->
         <activity
-            android:name=".HomeActivity"
-            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
+            android:name=".SplashScreen"
+            android:theme="@style/Theme.SplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SplashScreen"/>
-        <activity android:name=".SignInActivity"/>
-        <activity android:name=".AppIntroduction" />
-        <activity android:name=".MainActivity">
+
+        <activity
+            android:name=".HomeActivity"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
             </intent-filter>
         </activity>
+
+        <activity android:name=".SignInActivity" />
+        <activity android:name=".AppIntroduction" />
+
+        <!--        <activity android:name=".MainActivity">
+                    <intent-filter>
+                        <action android:name="android.intent.action.MAIN" />
+                        &lt;!&ndash; <category android:name="android.intent.category.LAUNCHER" /> &ndash;&gt;
+                    </intent-filter>
+                </activity>-->
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${mapsApiKey}" />
     </application>
 
 </manifest>

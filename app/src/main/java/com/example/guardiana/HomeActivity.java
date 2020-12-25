@@ -1,5 +1,6 @@
 package com.example.guardiana;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,7 +16,12 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Start app introduction activity - shows until permissions given
+        startActivity(new Intent(this, AppIntroduction.class));
+
         setContentView(R.layout.activity_home);
+
         chipNavigationBar = findViewById(R.id.bottom_nav_menu);
         chipNavigationBar.setItemSelected(R.id.bottom_nav_search, true);
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new FragmentSearch()).commit();
@@ -31,5 +37,9 @@ public class HomeActivity extends AppCompatActivity {
             }
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
         });
+    }
+
+    @Override
+    public void onBackPressed() {
     }
 }
