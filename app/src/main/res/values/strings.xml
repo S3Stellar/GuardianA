@@ -9,4 +9,8 @@
     <string name="slide_four_top_text"> - Permissions -</string>
     <string name="slide_four_down_text">In order for the app to work\n we may ask your permission!</string>
     <string name="ok">OK</string>
+
+    <!-- Menu navigation items  -->
+    <string name="search">Search</string>
+    <string name="road">Road</string>
 </resources>
