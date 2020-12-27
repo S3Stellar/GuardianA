@@ -2,6 +2,7 @@ package com.example.guardiana;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -62,15 +63,12 @@ public class SignInActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 // Successfully signed in
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                if (user != null) {
-                    manager.setLoggedIn(true);
-                } else {
-                    manager.setLoggedIn(false);
-                }
+                manager.setLoggedIn(user != null);
                 finish();
                 // ...
             } else {
                 manager.setLoggedIn(false);
+                Log.i("TAG", "onActivityResult: FFFFFFFFFFFFFFFFFFFFFFFF");
                 // Sign in failed. If response is null the user canceled the
                 // sign-in flow using the back button. Otherwise check
                 // response.getError().getErrorCode() and handle the error.
