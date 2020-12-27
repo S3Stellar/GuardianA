@@ -40,21 +40,9 @@ public class FragmentSearch extends Fragment {
         view = inflater.inflate(R.layout.fragment_search, container, false);
         setupPowerOffButton();
         setupRecyclerView();
-        addressList.add(new Address("Heifa", "Some street address"));
-        addressList.add(new Address("Tel Aviv", "Some street address"));
-        addressList.add(new Address("Tel Aviv", "Some street address"));
-        addressList.add(new Address("Heifa", "Some street address"));
-        addressList.add(new Address("Tel Aviv", "Some street address"));
-        addressList.add(new Address("Tel Aviv", "Some street address"));
-        addressList.add(new Address("Heifa", "Some street address"));
-        addressList.add(new Address("Tel Aviv", "Some street address"));
-        addressList.add(new Address("Tel Aviv", "Some street address"));
-        addressList.add(new Address("Heifa", "Some street address"));
-        addressList.add(new Address("Tel Aviv", "Some street address"));
-        addressList.add(new Address("Tel Aviv", "Some street address"));
-        addressList.add(new Address("Heifa", "Some street address"));
-        addressList.add(new Address("Tel Aviv", "Some street address"));
-        addressList.add(new Address("Tel Aviv", "Some street address"));
+        for(int i = 0; i < 35; i++){
+            addressList.add(new Address("Heifa", "Some street address " + i));
+        }
         addressAdapter.notifyDataSetChanged();
         addressAdapter.setOnItemClickListener(new AddressAdapter.OnItemClickListener() {
             @Override
