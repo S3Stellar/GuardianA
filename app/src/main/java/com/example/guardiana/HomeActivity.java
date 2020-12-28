@@ -18,7 +18,7 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // Start app introduction activity - shows until permissions given
-        //startActivity(new Intent(this, AppIntroduction.class));
+        startActivity(new Intent(this, AppIntroduction.class));
 
         setContentView(R.layout.activity_home);
 
