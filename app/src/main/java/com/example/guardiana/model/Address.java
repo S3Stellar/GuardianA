@@ -1,54 +1,72 @@
 package com.example.guardiana.model;
 
+import com.google.firebase.firestore.DocumentId;
+
+import java.util.Date;
+
 public class Address {
+    @DocumentId
+    private String id;
     private String city;
-    private String streetAddress;
-    private String state;
-    private String zipCode;
+    private String cityAddress;
+    private Date date;
 
     public Address() {
 
     }
-    public Address(String city, String streetAddress){
+    public Address(String city, String cityAddress, Date date) {
         this.city = city;
-        this.streetAddress = streetAddress;
+        this.cityAddress = cityAddress;
+        this.date = date;
 
     }
-    public Address( String city, String streetAddress, String state, String zipCode){
-        this(city, streetAddress);
-        this.state = state;
-        this.zipCode = zipCode;
+    public Address(String id, String city, String cityAddress, Date date) {
+        this.id = id;
+        this.city = city;
+        this.cityAddress = cityAddress;
+        this.date = date;
+
     }
 
-    public String getStreetAddress() {
-        return streetAddress;
+    public String getId() {
+        return id;
     }
 
-    public void setStreetAddress(String streetAddress) {
-        this.streetAddress = streetAddress;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getCity() {
         return city;
     }
 
+    public String getCityAddress() {
+        return cityAddress;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
     public void setCity(String city) {
         this.city = city;
     }
 
-    public String getState() {
-        return state;
+    public void setCityAddress(String cityAddress) {
+        this.cityAddress = cityAddress;
     }
 
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public String getZipCode() {
-        return zipCode;
-    }
-
-    public void setZipCode(String zipCode) {
-        this.zipCode = zipCode;
+    @Override
+    public String toString() {
+        return "Address{" +
+                "id='" + id + '\'' +
+                ", city='" + city + '\'' +
+                ", cityAddress='" + cityAddress + '\'' +
+                ", date=" + date +
+                '}';
     }
 }

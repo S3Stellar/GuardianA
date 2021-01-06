@@ -24,6 +24,7 @@ import com.firebase.ui.auth.AuthUI;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class FragmentSearch extends Fragment {
@@ -41,7 +42,7 @@ public class FragmentSearch extends Fragment {
         setupPowerOffButton();
         setupRecyclerView();
         for(int i = 0; i < 35; i++){
-            addressList.add(new Address("Heifa", "Some street address " + i));
+            addressList.add(new Address("Kfar saba", "something", new Date()));
         }
         addressAdapter.notifyDataSetChanged();
         addressAdapter.setOnItemClickListener(new AddressAdapter.OnItemClickListener() {
