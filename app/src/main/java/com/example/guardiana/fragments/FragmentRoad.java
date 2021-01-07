@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.transition.TransitionInflater;
 
 import com.example.guardiana.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -39,19 +40,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
         } catch (Exception e) {
             e.printStackTrace();
         }
-  /*      mMapView.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(GoogleMap mMap) {
-                googleMap = mMap;
-               // googleMap.setMyLocationEnabled(true);
-                //To add marker
-                LatLng sydney = new LatLng(-34, 151);
-                googleMap.addMarker(new MarkerOptions().position(sydney).title("Title").snippet("Marker Description"));
-                // For zooming functionality
-                CameraPosition cameraPosition = new CameraPosition.Builder().target(sydney).zoom(12).build();
-                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-            }
-        });*/
+
         mMapView.getMapAsync(this);
         return view;
     }
@@ -70,12 +59,12 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
             return;
         }
         googleMap.setMyLocationEnabled(true);
-                //To add marker
-                LatLng sydney = new LatLng(-34, 151);
-                googleMap.addMarker(new MarkerOptions().position(sydney).title("Title").snippet("Marker Description"));
-                // For zooming functionality
-                CameraPosition cameraPosition = new CameraPosition.Builder().target(sydney).zoom(12).build();
-                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        //To add marker
+        LatLng sydney = new LatLng(-34, 151);
+        googleMap.addMarker(new MarkerOptions().position(sydney).title("Title").snippet("Marker Description"));
+        // For zooming functionality
+        CameraPosition cameraPosition = new CameraPosition.Builder().target(sydney).zoom(12).build();
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
 
     }

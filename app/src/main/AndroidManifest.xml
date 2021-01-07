@@ -37,13 +37,6 @@
         <activity android:name=".SignInActivity" />
         <activity android:name=".AppIntroduction" />
 
-        <!--        <activity android:name=".MainActivity">
-                    <intent-filter>
-                        <action android:name="android.intent.action.MAIN" />
-                        &lt;!&ndash; <category android:name="android.intent.category.LAUNCHER" /> &ndash;&gt;
-                    </intent-filter>
-                </activity>-->
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${mapsApiKey}" />

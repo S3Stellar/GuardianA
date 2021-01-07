@@ -1,10 +1,5 @@
 package com.example.guardiana.repository;
 
-import android.os.Build;
-
-import androidx.annotation.RequiresApi;
-
-
 import com.example.guardiana.listeners.OnDataCompleteListener;
 import com.example.guardiana.listeners.OnDataErrorListener;
 import com.example.guardiana.model.Address;
@@ -19,11 +14,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.example.guardiana.App.getUserId;
+
 public class AddressFirebaseRepository implements FirebasePagingAndSortingRepository<Address, String> {
 
     private static final String USERS_ADDRESS_MAPPING = "UsersAddressMapping";
     private static final String ADDRESSES = "Addresses";
-    private final String userId = "Jonathan@gmail.com"; // This field should be global to the app
     private static AddressFirebaseRepository addressFirebaseRepository;
     private final CollectionReference collectionReference;
     private DocumentSnapshot lastResult;
@@ -32,7 +28,7 @@ public class AddressFirebaseRepository implements FirebasePagingAndSortingReposi
         collectionReference = FirebaseFirestore
                 .getInstance()
                 .collection(USERS_ADDRESS_MAPPING)
-                .document(userId)
+                .document(getUserId())
                 .collection(ADDRESSES);
     }
 
@@ -50,7 +46,7 @@ public class AddressFirebaseRepository implements FirebasePagingAndSortingReposi
                 .addOnFailureListener(err::onError);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
+
     @Override
     public void findById(String id, OnDataCompleteListener<Address> onComplete, OnDataErrorListener err) {
         collectionReference.document(id).get()
@@ -65,12 +61,11 @@ public class AddressFirebaseRepository implements FirebasePagingAndSortingReposi
                 .update(updateData(content));
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void findAll(Pageable pageable, OnDataCompleteListener<Address> onComplete, OnDataErrorListener err) {
         Query query = lastResult == null ?
-                collectionReference.orderBy(pageable.getSort().getSortBy()).limit(pageable.getPageSize()) :
-                collectionReference.orderBy(pageable.getSort().getSortBy()).startAfter(lastResult).limit(pageable.getPageSize());
+                collectionReference.orderBy(pageable.getSort().getSortBy(), pageable.getSort().getDirection()).limit(pageable.getPageSize()) :
+                collectionReference.orderBy(pageable.getSort().getSortBy(), pageable.getSort().getDirection()).startAfter(lastResult).limit(pageable.getPageSize());
         query.get().addOnCompleteListener(task -> {
             if (task.isSuccessful() && task.getResult() != null && task.getResult().size() > 0) {
                 onComplete.onDataCompleteListener(task.getResult().getDocuments().stream().map(e -> e.toObject(Address.class)).collect(Collectors.toList()));
@@ -86,12 +81,13 @@ public class AddressFirebaseRepository implements FirebasePagingAndSortingReposi
 
     private Map<String, Object> updateData(Address address) {
         Map<String, Object> map = new HashMap<>();
-        if (address.getCity() != null) {
-            map.put("address", address.getCity());
-        }
         if (address.getCityAddress() != null) {
             map.put("cityAddress", address.getCityAddress());
         }
+
+        map.put("lat", address.getLat());
+        map.put("lng", address.getLng());
+
         return map;
     }
 }

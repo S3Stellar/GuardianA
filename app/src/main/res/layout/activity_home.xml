@@ -20,6 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:animateLayoutChanges="false"
         android:background="@drawable/bottom_nav_shape"
         android:elevation="10dp"
         app:cnb_menuResource="@menu/bottom_nav_menu"
@@ -28,5 +29,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

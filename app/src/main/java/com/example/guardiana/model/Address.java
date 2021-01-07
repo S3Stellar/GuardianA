@@ -7,25 +7,56 @@ import java.util.Date;
 public class Address {
     @DocumentId
     private String id;
-    private String city;
+    private String cityName;
     private String cityAddress;
+
+    private double lat;
+    private double lng;
     private Date date;
 
     public Address() {
 
     }
-    public Address(String city, String cityAddress, Date date) {
-        this.city = city;
-        this.cityAddress = cityAddress;
-        this.date = date;
 
+    public Address(String cityName, String cityAddress, double lat, double lng, Date date) {
+        this.cityName = cityName;
+        this.cityAddress = cityAddress;
+        this.lat = lat;
+        this.lng = lng;
+        this.date = date;
     }
-    public Address(String id, String city, String cityAddress, Date date) {
-        this.id = id;
-        this.city = city;
-        this.cityAddress = cityAddress;
-        this.date = date;
 
+    public Address(String id, String cityName, String cityAddress, double lat, double lng, Date date) {
+        this.id = id;
+        this.cityName = cityName;
+        this.cityAddress = cityAddress;
+        this.lat = lat;
+        this.lng = lng;
+        this.date = date;
+    }
+
+    public double getLat() {
+        return lat;
+    }
+
+    public void setLat(double lat) {
+        this.lat = lat;
+    }
+
+    public double getLng() {
+        return lng;
+    }
+
+    public void setLng(double lng) {
+        this.lng = lng;
+    }
+
+    public String getCityName() {
+        return cityName;
+    }
+
+    public void setCityName(String cityName) {
+        this.cityName = cityName;
     }
 
     public String getId() {
@@ -36,9 +67,6 @@ public class Address {
         this.id = id;
     }
 
-    public String getCity() {
-        return city;
-    }
 
     public String getCityAddress() {
         return cityAddress;
@@ -52,9 +80,6 @@ public class Address {
         this.date = date;
     }
 
-    public void setCity(String city) {
-        this.city = city;
-    }
 
     public void setCityAddress(String cityAddress) {
         this.cityAddress = cityAddress;
@@ -64,8 +89,10 @@ public class Address {
     public String toString() {
         return "Address{" +
                 "id='" + id + '\'' +
-                ", city='" + city + '\'' +
+                ", cityName='" + cityName + '\'' +
                 ", cityAddress='" + cityAddress + '\'' +
+                ", lat=" + lat +
+                ", lng=" + lng +
                 ", date=" + date +
                 '}';
     }

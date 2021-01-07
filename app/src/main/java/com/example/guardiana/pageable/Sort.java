@@ -1,15 +1,17 @@
 package com.example.guardiana.pageable;
 
+import com.google.firebase.firestore.Query;
+
 public class Sort {
     private String sortBy;
-    private Direction direction;
+    private Query.Direction direction;
 
-    public Sort(String sortBy, Direction direction){
+    public Sort(String sortBy, Query.Direction direction){
         this.sortBy = sortBy;
         this.direction = direction;
     }
 
-    public Direction getDirection() {
+    public Query.Direction getDirection() {
         return direction;
     }
 
@@ -17,7 +19,7 @@ public class Sort {
         return sortBy;
     }
 
-    public void setDirection(Direction direction) {
+    public void setDirection(Query.Direction direction) {
         this.direction = direction;
     }
 

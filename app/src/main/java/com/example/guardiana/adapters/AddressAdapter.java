@@ -40,7 +40,7 @@ public class AddressAdapter extends RecyclerView.Adapter<AddressAdapter.AddressV
 
     @Override
     public void onBindViewHolder(@NonNull AddressViewHolder holder, int position) {
-        holder.city.setText(addressList.get(position).getCity());
+        holder.city.setText(addressList.get(position).getCityName());
         holder.cityAddress.setText(addressList.get(position).getCityAddress());
     }
 

@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.guardiana"
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -61,6 +61,11 @@ dependencies {
     // Firebase login UI
     implementation 'com.firebaseui:firebase-ui-auth:6.4.0'
 
+    // Firebase
+    implementation 'com.google.firebase:firebase-firestore:22.0.1'
+
+    // Google places API
+    implementation 'com.google.android.libraries.places:places:2.4.0'
 
     // Pin View
     implementation 'com.chaos.view:pinview:1.4.4'
@@ -77,7 +82,5 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
-    // Firebase
-    implementation 'com.google.firebase:firebase-firestore:22.0.1'
 
 }
