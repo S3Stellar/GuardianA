@@ -5,12 +5,12 @@ import com.google.firebase.firestore.Query;
 public class PageRequest extends AbstractPageRequest {
     private final Sort sort;
 
-    protected PageRequest(int page, int size, String sortBy, Query.Direction direction){
+    protected PageRequest(int page, int size, String sortBy, Query.Direction direction) {
         super(page, size);
         sort = new Sort(sortBy, direction);
     }
 
-    public static PageRequest of(int page, int size, String sortBy, Query.Direction direction){
+    public static PageRequest of(int page, int size, String sortBy, Query.Direction direction) {
         return new PageRequest(page, size, sortBy, direction);
     }
 

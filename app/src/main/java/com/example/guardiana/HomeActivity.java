@@ -43,10 +43,10 @@ public class HomeActivity extends AppCompatActivity {
         chipNavigationBar.setOnItemSelectedListener(id -> {
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             if (R.id.bottom_nav_search == id) {
-                 ft.setCustomAnimations(
-                         R.anim.slide_in,
-                         R.anim.slide_out
-                 );
+                ft.setCustomAnimations(
+                        R.anim.slide_in,
+                        R.anim.slide_out
+                );
                 ft.show(fragmentSearch);
                 ft.hide(fragmentRoad);
             } else if (R.id.bottom_nav_map == id) {

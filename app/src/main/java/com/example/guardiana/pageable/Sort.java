@@ -6,7 +6,7 @@ public class Sort {
     private String sortBy;
     private Query.Direction direction;
 
-    public Sort(String sortBy, Query.Direction direction){
+    public Sort(String sortBy, Query.Direction direction) {
         this.sortBy = sortBy;
         this.direction = direction;
     }

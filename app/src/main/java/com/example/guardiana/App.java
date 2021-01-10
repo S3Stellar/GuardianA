@@ -29,12 +29,8 @@ public class App extends Application {
         if (currentUser != null) {
             userId = currentUser.getEmail() != null && !currentUser.getEmail().isEmpty() ? currentUser.getEmail() : currentUser.getPhoneNumber();
 
-            /*Log.i("TAG", "checkLoggedIn: if: phone" + currentUser.getPhoneNumber() + ", email " + currentUser.getEmail() + ", display " + currentUser.getDisplayName()
-            + ", provider " + currentUser.getProviderId() + ",  uid" + currentUser.getUid());*/
             manager.setLoggedIn(true);
-            Log.i("TAG", "checkLoggedIn: userId= " + userId);
         } else {
-            Log.i("TAG", "checkLoggedIn: else: ");
             manager.setLoggedIn(false);
         }
     }

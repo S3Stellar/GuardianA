@@ -11,7 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
-import androidx.transition.TransitionInflater;
 
 import com.example.guardiana.R;
 import com.google.android.gms.maps.CameraUpdateFactory;

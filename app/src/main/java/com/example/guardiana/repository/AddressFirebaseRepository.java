@@ -1,7 +1,5 @@
 package com.example.guardiana.repository;
 
-import android.util.Log;
-
 import com.example.guardiana.listeners.OnDataCompleteListener;
 import com.example.guardiana.listeners.OnDataErrorListener;
 import com.example.guardiana.model.Address;
@@ -27,7 +25,6 @@ public class AddressFirebaseRepository implements FirebasePagingAndSortingReposi
     private static DocumentSnapshot lastResult;
 
     private AddressFirebaseRepository() {
-        Log.i("TAG", "AddressFirebaseRepository: CREATED");
         collectionReference = FirebaseFirestore
                 .getInstance()
                 .collection(USERS_ADDRESS_MAPPING)

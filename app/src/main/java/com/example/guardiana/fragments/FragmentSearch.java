@@ -16,18 +16,14 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.transition.TransitionInflater;
 
 import com.example.guardiana.App;
 import com.example.guardiana.PreferencesManager;
 import com.example.guardiana.R;
 import com.example.guardiana.SignInActivity;
 import com.example.guardiana.adapters.AddressAdapter;
-import com.example.guardiana.listeners.OnDataCompleteListener;
-import com.example.guardiana.listeners.OnDataErrorListener;
 import com.example.guardiana.model.Address;
 import com.example.guardiana.model.Location;
-import com.example.guardiana.pageable.Direction;
 import com.example.guardiana.pageable.PageRequest;
 import com.example.guardiana.repository.AddressFirebaseRepository;
 import com.firebase.ui.auth.AuthUI;
@@ -40,13 +36,11 @@ import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.Query;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -60,7 +54,6 @@ public class FragmentSearch extends Fragment {
 
     private static final int AUTOCOMPLETE_REQUEST_CODE = 991;
     private View view;
-    private FloatingActionButton logout;
     private PreferencesManager manager;
     private RecyclerView recyclerView;
     private AddressAdapter addressAdapter;
@@ -75,8 +68,7 @@ public class FragmentSearch extends Fragment {
         mSearchText = view.findViewById(R.id.search_bar);
         addressFirebaseRepository = AddressFirebaseRepository.getInstance();
 
-        Log.i(TAG, "onCreateView: CREATED FRAG SEARCH");
-        ((TextView) view.findViewById(R.id.welcomeText)).setText("Hello " + App.getUserId() + " !");
+        ((TextView) view.findViewById(R.id.welcomeText)).setText(String.format("Hello %s !", App.getUserId()));
         setupPowerOffButton();
         setupRecyclerView();
         loadAddressesToRecycleView();
@@ -98,7 +90,6 @@ public class FragmentSearch extends Fragment {
             data.forEach(address -> {
                 if (!addressList.contains(address)) {
                     addressList.add(address);
-                    Log.i(TAG, "loadAddressesToRecycleView: " + address.getCityAddress());
                 }
             });
             //addressList.addAll(data);
@@ -139,7 +130,6 @@ public class FragmentSearch extends Fragment {
         if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 Place place = Autocomplete.getPlaceFromIntent(data);
-                Log.i(TAG, "onActivityResult: Place: " + place.getName() + ", address: " + place.getAddress());
 
                 LatLng latLng = place.getLatLng();
                 double myLat = latLng.latitude;
@@ -148,14 +138,12 @@ public class FragmentSearch extends Fragment {
                 try {
                     List<android.location.Address> addresses = new Geocoder(getContext(), Locale.getDefault()).getFromLocation(myLat, myLng, 1);
                     cityName = addresses.get(0).getLocality();
-                    Log.i(TAG, "cityName = " + cityName);
                 } catch (IOException e) {
                     e.printStackTrace();
 
                 }
                 addressFirebaseRepository.save(new Address(cityName, place.getName(), new Location(myLat, myLng),
                         new Date()), data1 -> {
-                    //loadAddressesToRecycleView();
                     addressList.addAll(0, data1);
                     addressAdapter.notifyDataSetChanged();
                 }, e -> {
@@ -196,7 +184,6 @@ public class FragmentSearch extends Fragment {
         view.findViewById(R.id.poweroffButt).setOnClickListener(v -> AuthUI.getInstance()
                 .signOut(getContext())
                 .addOnCompleteListener(task -> {
-                    Log.i("TAG", "onComplete: ");
                     logOutUser();
                     startActivity(new Intent(getContext(), SignInActivity.class));
                     getActivity().finish();

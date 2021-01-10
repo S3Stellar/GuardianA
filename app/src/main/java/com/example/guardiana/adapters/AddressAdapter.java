@@ -52,14 +52,15 @@ public class AddressAdapter extends RecyclerView.Adapter<AddressAdapter.AddressV
     public static class AddressViewHolder extends RecyclerView.ViewHolder {
         public TextView city;
         public TextView cityAddress;
+
         public AddressViewHolder(@NonNull View itemView, OnItemClickListener onItemClickListener) {
             super(itemView);
             city = itemView.findViewById(R.id.address_item_text_view_header);
             cityAddress = itemView.findViewById(R.id.address_item_text_view_content);
             itemView.setOnClickListener(v -> {
-                if(onItemClickListener != null){
+                if (onItemClickListener != null) {
                     int position = getAdapterPosition();
-                    if(position != RecyclerView.NO_POSITION){
+                    if (position != RecyclerView.NO_POSITION) {
                         onItemClickListener.onItemClick(position);
                     }
                 }
