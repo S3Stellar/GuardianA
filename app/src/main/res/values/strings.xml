@@ -13,4 +13,8 @@
     <!-- Menu navigation items  -->
     <string name="search">Search</string>
     <string name="road">Road</string>
+
+    <string name="googleWebClientLogin">251393833753-hpd7ai30di2p1hodbuh8a2uvs2rpa3d6.apps.googleusercontent.com</string>
+    <string name="login_email_hint">Email</string>
+    <string name="login_password_hint">Password</string>
 </resources>

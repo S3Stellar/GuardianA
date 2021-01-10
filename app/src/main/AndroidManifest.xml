@@ -34,7 +34,11 @@
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
-        <activity android:name=".SignInActivity" />
+
+        <activity
+            android:name=".SignInActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
+
         <activity android:name=".AppIntroduction" />
 
         <meta-data

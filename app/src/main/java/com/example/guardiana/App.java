@@ -11,7 +11,7 @@ public class App extends Application {
 
     private static Context context;
     private PreferencesManager manager;
-    private static String userId;
+    private static String userId = "";
 
     @Override
     public void onCreate() {
@@ -31,12 +31,16 @@ public class App extends Application {
 
             /*Log.i("TAG", "checkLoggedIn: if: phone" + currentUser.getPhoneNumber() + ", email " + currentUser.getEmail() + ", display " + currentUser.getDisplayName()
             + ", provider " + currentUser.getProviderId() + ",  uid" + currentUser.getUid());*/
-
+            manager.setLoggedIn(true);
             Log.i("TAG", "checkLoggedIn: userId= " + userId);
         } else {
             Log.i("TAG", "checkLoggedIn: else: ");
             manager.setLoggedIn(false);
         }
+    }
+
+    public static void setUserId(String userId) {
+        App.userId = userId;
     }
 
     public static Context getContext() {

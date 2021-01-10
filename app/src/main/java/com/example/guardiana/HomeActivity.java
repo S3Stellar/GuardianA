@@ -1,8 +1,6 @@
 package com.example.guardiana;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
@@ -20,8 +18,6 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Start app introduction activity - shows until permissions given
-        startActivity(new Intent(this, AppIntroduction.class));
 
         setContentView(R.layout.activity_home);
         fragmentRoad = new FragmentRoad();

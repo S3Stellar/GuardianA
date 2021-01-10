@@ -3,52 +3,41 @@ package com.example.guardiana.model;
 import com.google.firebase.firestore.DocumentId;
 
 import java.util.Date;
+import java.util.Objects;
 
 public class Address {
     @DocumentId
     private String id;
     private String cityName;
     private String cityAddress;
-
-    private double lat;
-    private double lng;
+    private Location location;
     private Date date;
 
     public Address() {
 
     }
 
-    public Address(String cityName, String cityAddress, double lat, double lng, Date date) {
+    public Address(String cityName, String cityAddress, Location location, Date date) {
         this.cityName = cityName;
         this.cityAddress = cityAddress;
-        this.lat = lat;
-        this.lng = lng;
+        this.location = location;
         this.date = date;
     }
 
-    public Address(String id, String cityName, String cityAddress, double lat, double lng, Date date) {
+    public Address(String id, String cityName, String cityAddress, Location location, Date date) {
         this.id = id;
         this.cityName = cityName;
         this.cityAddress = cityAddress;
-        this.lat = lat;
-        this.lng = lng;
+        this.location = location;
         this.date = date;
     }
 
-    public double getLat() {
-        return lat;
+    public Location getLocation() {
+        return location;
     }
 
-    public void setLat(double lat) {
-        this.lat = lat;
-    }
-
-    public double getLng() {
-        return lng;
-    }
-
-    public void setLng(double lng) {
-        this.lng = lng;
+    public void setLocation(Location location) {
+        this.location = location;
     }
 
     public String getCityName() {
@@ -86,13 +75,23 @@ public class Address {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Address address = (Address) o;
+        return Objects.equals(cityName, address.cityName) &&
+                Objects.equals(cityAddress, address.cityAddress) &&
+                Objects.equals(location, address.location) &&
+                Objects.equals(date, address.date);
+    }
+
+    @Override
     public String toString() {
         return "Address{" +
                 "id='" + id + '\'' +
                 ", cityName='" + cityName + '\'' +
                 ", cityAddress='" + cityAddress + '\'' +
-                ", lat=" + lat +
-                ", lng=" + lng +
+                ", location=" + location +
                 ", date=" + date +
                 '}';
     }

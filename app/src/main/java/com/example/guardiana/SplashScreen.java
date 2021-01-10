@@ -13,13 +13,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class SplashScreen extends AppCompatActivity {
 
-    private final int splashTime = 100;
+    private final int splashTime = 180;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            Intent intent = new Intent(SplashScreen.this, HomeActivity.class);
+            Intent intent = new Intent(SplashScreen.this, AppIntroduction.class);
             startActivity(intent);
             finish();
         }, splashTime);

@@ -1,5 +1,7 @@
 package com.example.guardiana.repository;
 
+import android.util.Log;
+
 import com.example.guardiana.listeners.OnDataCompleteListener;
 import com.example.guardiana.listeners.OnDataErrorListener;
 import com.example.guardiana.model.Address;
@@ -22,9 +24,10 @@ public class AddressFirebaseRepository implements FirebasePagingAndSortingReposi
     private static final String ADDRESSES = "Addresses";
     private static AddressFirebaseRepository addressFirebaseRepository;
     private final CollectionReference collectionReference;
-    private DocumentSnapshot lastResult;
+    private static DocumentSnapshot lastResult;
 
     private AddressFirebaseRepository() {
+        Log.i("TAG", "AddressFirebaseRepository: CREATED");
         collectionReference = FirebaseFirestore
                 .getInstance()
                 .collection(USERS_ADDRESS_MAPPING)
@@ -33,7 +36,7 @@ public class AddressFirebaseRepository implements FirebasePagingAndSortingReposi
     }
 
     public static AddressFirebaseRepository getInstance() {
-        if (addressFirebaseRepository == null) {
+        if (addressFirebaseRepository == null || lastResult == null) {
             addressFirebaseRepository = new AddressFirebaseRepository();
         }
         return addressFirebaseRepository;
@@ -79,14 +82,23 @@ public class AddressFirebaseRepository implements FirebasePagingAndSortingReposi
         collectionReference.document(id).delete();
     }
 
+    public void setLastResult(DocumentSnapshot lastResult) {
+        this.lastResult = lastResult;
+    }
+
     private Map<String, Object> updateData(Address address) {
         Map<String, Object> map = new HashMap<>();
-        if (address.getCityAddress() != null) {
+        if (address.getCityAddress() != null && !address.getCityAddress().isEmpty()) {
             map.put("cityAddress", address.getCityAddress());
         }
 
-        map.put("lat", address.getLat());
-        map.put("lng", address.getLng());
+        if (address.getCityName() != null && !address.getCityName().isEmpty()) {
+            map.put("cityName", address.getCityName());
+        }
+
+        if (address.getLocation() != null) {
+            map.put("location", address.getLocation());
+        }
 
         return map;
     }

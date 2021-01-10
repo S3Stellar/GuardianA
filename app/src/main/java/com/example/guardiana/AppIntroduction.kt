@@ -90,6 +90,7 @@ class AppIntroduction : AppIntro() {
     }
 
     private fun goToMain() {
+        startActivity(Intent(this, HomeActivity::class.java))
         finish()
     }
 

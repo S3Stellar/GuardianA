@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,6 +26,7 @@ import com.example.guardiana.adapters.AddressAdapter;
 import com.example.guardiana.listeners.OnDataCompleteListener;
 import com.example.guardiana.listeners.OnDataErrorListener;
 import com.example.guardiana.model.Address;
+import com.example.guardiana.model.Location;
 import com.example.guardiana.pageable.Direction;
 import com.example.guardiana.pageable.PageRequest;
 import com.example.guardiana.repository.AddressFirebaseRepository;
@@ -73,6 +75,8 @@ public class FragmentSearch extends Fragment {
         mSearchText = view.findViewById(R.id.search_bar);
         addressFirebaseRepository = AddressFirebaseRepository.getInstance();
 
+        Log.i(TAG, "onCreateView: CREATED FRAG SEARCH");
+        ((TextView) view.findViewById(R.id.welcomeText)).setText("Hello " + App.getUserId() + " !");
         setupPowerOffButton();
         setupRecyclerView();
         loadAddressesToRecycleView();
@@ -91,7 +95,13 @@ public class FragmentSearch extends Fragment {
 
     private void loadAddressesToRecycleView() {
         addressFirebaseRepository.findAll(PageRequest.of(5, "date", Query.Direction.DESCENDING), data -> {
-            addressList.addAll(data);
+            data.forEach(address -> {
+                if (!addressList.contains(address)) {
+                    addressList.add(address);
+                    Log.i(TAG, "loadAddressesToRecycleView: " + address.getCityAddress());
+                }
+            });
+            //addressList.addAll(data);
             addressAdapter.notifyDataSetChanged();
         }, e -> {
         });
@@ -143,7 +153,8 @@ public class FragmentSearch extends Fragment {
                     e.printStackTrace();
 
                 }
-                addressFirebaseRepository.save(new Address(cityName, place.getName(), myLat, myLng, new Date()), data1 -> {
+                addressFirebaseRepository.save(new Address(cityName, place.getName(), new Location(myLat, myLng),
+                        new Date()), data1 -> {
                     //loadAddressesToRecycleView();
                     addressList.addAll(0, data1);
                     addressAdapter.notifyDataSetChanged();
@@ -165,12 +176,13 @@ public class FragmentSearch extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(addressAdapter = new AddressAdapter(addressList = new ArrayList<>()));
+
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-                if (!recyclerView.canScrollVertically(1) && newState==RecyclerView.SCROLL_STATE_IDLE) {
-                    Log.d("-----","end");
+                if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    Log.d("-----", "end");
                     loadAddressesToRecycleView();
                 }
             }
@@ -185,9 +197,23 @@ public class FragmentSearch extends Fragment {
                 .signOut(getContext())
                 .addOnCompleteListener(task -> {
                     Log.i("TAG", "onComplete: ");
-                    manager.setLoggedIn(false);
+                    logOutUser();
                     startActivity(new Intent(getContext(), SignInActivity.class));
+                    getActivity().finish();
+                    addressFirebaseRepository.setLastResult(null);
+                    addressFirebaseRepository = AddressFirebaseRepository.getInstance();
                 }));
 
+    }
+
+    private void logOutUser() {
+        manager.setLoggedIn(false);
+        clearRecycleView();
+    }
+
+    public void clearRecycleView() {
+        int size = addressList.size();
+        addressList.clear();
+        addressAdapter.notifyItemRangeRemoved(0, size);
     }
 }
