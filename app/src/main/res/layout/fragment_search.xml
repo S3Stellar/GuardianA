@@ -49,7 +49,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:backgroundTint="@color/splash_screen_bg_color"
-            app:srcCompat="@drawable/ic_baseline_settings_24" />
+            app:srcCompat="@drawable/ic_baseline_settings_24"
+            android:focusable="true" />
+
 
         <TextView
             android:id="@+id/welcomeText"

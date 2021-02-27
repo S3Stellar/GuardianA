@@ -1,7 +1,10 @@
 package com.example.guardiana.fragments;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -59,12 +62,18 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
         }
         googleMap.setMyLocationEnabled(true);
         //To add marker
-        LatLng sydney = new LatLng(-34, 151);
-        googleMap.addMarker(new MarkerOptions().position(sydney).title("Title").snippet("Marker Description"));
+        LocationManager locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+        String locationProvider = LocationManager.NETWORK_PROVIDER;
+        // I suppressed the missing-permission warning because this wouldn't be executed in my
+        // case without location services being enabled
+        @SuppressLint("MissingPermission") android.location.Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
+       // double userLat = lastKnownLocation.getLatitude();
+        //double userLong = lastKnownLocation.getLongitude();
+
+       // LatLng yourLocation = new LatLng(userLat, userLong);
+        //googleMap.addMarker(new MarkerOptions().position(yourLocation).title("Title").snippet("Marker Description"));
         // For zooming functionality
-        CameraPosition cameraPosition = new CameraPosition.Builder().target(sydney).zoom(12).build();
-        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
-
+    //    CameraPosition cameraPosition = new CameraPosition.Builder().target(yourLocation).zoom(18).build();
+       // googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 }

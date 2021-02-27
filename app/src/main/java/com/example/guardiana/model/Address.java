@@ -1,35 +1,36 @@
 package com.example.guardiana.model;
 
-import com.google.firebase.firestore.DocumentId;
-
 import java.util.Date;
 import java.util.Objects;
 
 public class Address {
-    @DocumentId
+
     private String id;
-    private String cityName;
+    private String user;
     private String cityAddress;
+    private String cityName;
+    private Date createdTimestamp;
     private Location location;
-    private Date date;
 
     public Address() {
 
     }
 
-    public Address(String cityName, String cityAddress, Location location, Date date) {
-        this.cityName = cityName;
+    public Address(String id, String user, String cityAddress, String cityName, Date createdTimestamp, Location location) {
+        this.id = id;
+        this.user = user;
         this.cityAddress = cityAddress;
+        this.cityName = cityName;
+        this.createdTimestamp = createdTimestamp;
         this.location = location;
-        this.date = date;
     }
 
-    public Address(String id, String cityName, String cityAddress, Location location, Date date) {
-        this.id = id;
-        this.cityName = cityName;
+    public Address(String user, String cityAddress, String cityName, Date createdTimestamp, Location location) {
+        this.user = user;
         this.cityAddress = cityAddress;
+        this.cityName = cityName;
+        this.createdTimestamp = createdTimestamp;
         this.location = location;
-        this.date = date;
     }
 
     public Location getLocation() {
@@ -61,14 +62,21 @@ public class Address {
         return cityAddress;
     }
 
-    public Date getDate() {
-        return date;
+    public String getUser() {
+        return user;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setUser(String user) {
+        this.user = user;
     }
 
+    public Date getCreatedTimestamp() {
+        return createdTimestamp;
+    }
+
+    public void setCreatedTimestamp(Date createdTimestamp) {
+        this.createdTimestamp = createdTimestamp;
+    }
 
     public void setCityAddress(String cityAddress) {
         this.cityAddress = cityAddress;
@@ -82,17 +90,18 @@ public class Address {
         return Objects.equals(cityName, address.cityName) &&
                 Objects.equals(cityAddress, address.cityAddress) &&
                 Objects.equals(location, address.location) &&
-                Objects.equals(date, address.date);
+                Objects.equals(createdTimestamp, address.createdTimestamp);
     }
 
     @Override
     public String toString() {
         return "Address{" +
                 "id='" + id + '\'' +
-                ", cityName='" + cityName + '\'' +
+                ", user='" + user + '\'' +
                 ", cityAddress='" + cityAddress + '\'' +
+                ", cityName='" + cityName + '\'' +
+                ", createdTimestamp=" + createdTimestamp +
                 ", location=" + location +
-                ", date=" + date +
                 '}';
     }
 }

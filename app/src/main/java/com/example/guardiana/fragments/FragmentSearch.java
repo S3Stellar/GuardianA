@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Geocoder;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +16,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,6 +29,7 @@ import com.example.guardiana.model.Address;
 import com.example.guardiana.model.Location;
 import com.example.guardiana.pageable.PageRequest;
 import com.example.guardiana.repository.AddressFirebaseRepository;
+import com.example.guardiana.viewmodel.AddressViewModel;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.model.LatLng;
@@ -60,6 +64,8 @@ public class FragmentSearch extends Fragment {
     private List<com.example.guardiana.model.Address> addressList;
     private EditText mSearchText;
     private AddressFirebaseRepository addressFirebaseRepository;
+    private AddressViewModel addressViewModel;
+
 
     @Nullable
     @Override
@@ -67,6 +73,19 @@ public class FragmentSearch extends Fragment {
         view = inflater.inflate(R.layout.fragment_search, container, false);
         mSearchText = view.findViewById(R.id.search_bar);
         addressFirebaseRepository = AddressFirebaseRepository.getInstance();
+
+        addressViewModel = new ViewModelProvider.AndroidViewModelFactory(requireActivity().getApplication()).create(AddressViewModel.class);
+
+        view.findViewById(R.id.floatingActionButton3).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addressViewModel.create(
+                        new Address("djfarag@gmail.com", "afff","lotus 17",new Date(), new Location(55,32) ));
+            }
+        });
+
+        addressViewModel.getAllAddresses("", "", "", "", 0, 10).observe(requireActivity(),
+                addresses -> Log.i(TAG, "getAllAddresses: " + addresses));
 
         ((TextView) view.findViewById(R.id.welcomeText)).setText(String.format("Hello %s !", App.getUserId()));
         setupPowerOffButton();
@@ -142,13 +161,14 @@ public class FragmentSearch extends Fragment {
                     e.printStackTrace();
 
                 }
-                addressFirebaseRepository.save(new Address(cityName, place.getName(), new Location(myLat, myLng),
+
+             /*   addressFirebaseRepository.save(new Address(cityName, place.getName(), new Location(myLat, myLng),
                         new Date()), data1 -> {
                     addressList.addAll(0, data1);
                     addressAdapter.notifyDataSetChanged();
                 }, e -> {
 
-                });
+                });*/
             } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
                 // TODO: Handle the error.
                 Status status = Autocomplete.getStatusFromIntent(data);
