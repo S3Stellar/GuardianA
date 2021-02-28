@@ -16,6 +16,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -50,6 +53,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
 import static android.content.ContentValues.TAG;
@@ -57,40 +64,113 @@ import static android.content.ContentValues.TAG;
 public class FragmentSearch extends Fragment {
 
     private static final int AUTOCOMPLETE_REQUEST_CODE = 991;
-    private View view;
-    private PreferencesManager manager;
+    private AddressViewModel addressViewModel;
     private RecyclerView recyclerView;
     private AddressAdapter addressAdapter;
-    private List<com.example.guardiana.model.Address> addressList;
+    private PreferencesManager manager;
     private EditText mSearchText;
-    private AddressFirebaseRepository addressFirebaseRepository;
-    private AddressViewModel addressViewModel;
-
+    private View view;
+    private LinearLayoutManager linearLayoutManager;
+    private static int page1 = 0;
+    private static int page = 0;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_search, container, false);
         mSearchText = view.findViewById(R.id.search_bar);
-        addressFirebaseRepository = AddressFirebaseRepository.getInstance();
+        setupRecyclerView();
 
-        addressViewModel = new ViewModelProvider.AndroidViewModelFactory(requireActivity().getApplication()).create(AddressViewModel.class);
+        addressViewModel = new ViewModelProvider(requireActivity()).get(AddressViewModel.class);
+
+
+//        addressViewModel = new ViewModelProvider.AndroidViewModelFactory(getActivity().create(AddressViewModel.class);
 
         view.findViewById(R.id.floatingActionButton3).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addressViewModel.create(
-                        new Address("djfarag@gmail.com", "afff","lotus 17",new Date(), new Location(55,32) ));
+//                addressViewModel.create(
+//                        new Address("Jonathan@gmail.com", "afff", "lotus" + page1++, new Date(), new Location(55, 32)));
+
+                final Observer<List<Address>> nameObserver = new Observer<List<Address>>() {
+                    @Override
+                    public void onChanged(List<Address> addresses) {
+
+                        List<Address> list = new ArrayList<>(addressAdapter.getCurrentList());
+                        list.addAll(addresses);
+                        addressAdapter.submitList(list);
+
+                    }
+
+                };
+
+                LiveData<List<Address>>ll =  addressViewModel.getAllAddresses("Jonathan@gmail.com", "", "", "", "", page++, 2);
+                ll.observe(requireActivity(),nameObserver);
+                ll.removeObserver(nameObserver);
+//                        addressViewModel.getAllAddresses("Jonathan@gmail.com", "", "", "", "", page++, 2).observe(requireActivity(),
+//                                addresses -> {
+////                            for(Address address: addresses){
+////                                Log.i(TAG, "The Value from the server is : " + address);
+////                            }
+//                                    Log.i(TAG, "onClick: ");
+//                                    List<Address> list = new ArrayList<>(addressAdapter.getCurrentList());
+//                                    list.addAll(addresses);
+//                            for(Address ad: addressAdapter.getCurrentList()){
+//                                Log.i(TAG, "Current List: " + ad);
+//                            }
+//                            for(Address ad : addresses){
+//                                if(!addressAdapter.getCurrentList().contains(ad)){
+//                                    Log.i(TAG, "Added new list: " + ad);
+//                                    list.add(ad);
+//                                }else {
+//                                    Log.i(TAG, "Falling angle: " + ad);
+//                                }
+////                            }
+//                                    addressAdapter.submitList(null);
+//                                    Log.i(TAG, "get curr list: " + addressAdapter.getCurrentList());
+//                                    addressAdapter.submitList(list);
+//                                });
             }
         });
 
-        addressViewModel.getAllAddresses("", "", "", "", 0, 10).observe(requireActivity(),
-                addresses -> Log.i(TAG, "getAllAddresses: " + addresses));
 
+//        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+//            @Override
+//            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+//                super.onScrollStateChanged(recyclerView, newState);
+//                if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
+
+//                    addressViewModel.getAllAddresses("Jonathan@gmail.com", "", "", "", "", ++page, 2).observe(requireActivity(),
+//                            addresses ->{
+//
+////                                Log.i(TAG, "Page number is: " + page);
+//                                for(Address addr : addresses){
+//                                    Log.i(TAG, "Address is: " + addr);
+//                                }
+//                                List<Address> list = new ArrayList<>();
+//                                for(Address addr : addressAdapter.getCurrentList()){
+//                                        list.add(addr);
+//                                }
+//                                list.addAll(addresses);
+//                                Log.i(TAG, "onScrollStateChanged: " + addressAdapter.getCurrentList());
+//                                List<Address> list = new ArrayList<>();
+//                                Collections.copy(list, addressAdapter.getCurrentList());
+//                                list.addAll(addresses);
+//                                addressAdapter.getCurrentList().addAll(addresses);
+//                                List<Address> list = new ArrayList<>(addressAdapter.getCurrentList());
+//                                List<Address> list = new ArrayList<>(addresses);
+//                                list.addAll(addressAdapter.getCurrentList());
+//
+//                                addressAdapter.submitList(list); // if(newList == currList)
+
+//                            });
+
+
+//                }
+//            }
+//        });
         ((TextView) view.findViewById(R.id.welcomeText)).setText(String.format("Hello %s !", App.getUserId()));
         setupPowerOffButton();
-        setupRecyclerView();
-        loadAddressesToRecycleView();
         initializePlacesApiKey();
 
         addressAdapter.setOnItemClickListener(position -> {
@@ -98,24 +178,28 @@ public class FragmentSearch extends Fragment {
             Log.i("TAG", "onItemClick: " + position);
         });
 
+//
+//        addressViewModel.getLive("Jonathan@gmail.com", "", "", "", "", 0, 10).observe(requireActivity(), call -> {
+//            call.enqueue(new Callback<Address[]>() {
+//                @Override
+//                public void onResponse(Call<Address[]> call, Response<Address[]> response) {
+//
+//                }
+//
+//                @Override
+//                public void onFailure(Call<Address[]> call, Throwable t) {
+//
+//                }
+//            });
+//        });
+
         mSearchText.setFocusable(false);
         mSearchText.setOnClickListener(this::startAutocompleteActivity);
         return view;
 
     }
 
-    private void loadAddressesToRecycleView() {
-        addressFirebaseRepository.findAll(PageRequest.of(5, "date", Query.Direction.DESCENDING), data -> {
-            data.forEach(address -> {
-                if (!addressList.contains(address)) {
-                    addressList.add(address);
-                }
-            });
-            //addressList.addAll(data);
-            addressAdapter.notifyDataSetChanged();
-        }, e -> {
-        });
-    }
+
 
     private void initializePlacesApiKey() {
         try {
@@ -181,22 +265,11 @@ public class FragmentSearch extends Fragment {
 
     private void setupRecyclerView() {
         recyclerView = view.findViewById(R.id.fragment_search_recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(addressAdapter = new AddressAdapter(addressList = new ArrayList<>()));
-
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-                if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    Log.d("-----", "end");
-                    loadAddressesToRecycleView();
-                }
-            }
-        });
-
-        addressAdapter.notifyDataSetChanged();
+        linearLayoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(linearLayoutManager);
+        //recyclerView.setHasFixedSize(true);
+        addressAdapter = new AddressAdapter();
+        recyclerView.setAdapter(addressAdapter);
     }
 
     private void setupPowerOffButton() {
@@ -207,20 +280,20 @@ public class FragmentSearch extends Fragment {
                     logOutUser();
                     startActivity(new Intent(getContext(), SignInActivity.class));
                     getActivity().finish();
-                    addressFirebaseRepository.setLastResult(null);
-                    addressFirebaseRepository = AddressFirebaseRepository.getInstance();
+                    //addressFirebaseRepository.setLastResult(null);
+                    //addressFirebaseRepository = AddressFirebaseRepository.getInstance();
                 }));
 
     }
 
     private void logOutUser() {
         manager.setLoggedIn(false);
-        clearRecycleView();
+     //   clearRecycleView();
     }
 
     public void clearRecycleView() {
-        int size = addressList.size();
-        addressList.clear();
-        addressAdapter.notifyItemRangeRemoved(0, size);
+        //int size = addressList.size();
+        //addressList.clear();
+        //   addressAdapter.notifyItemRangeRemoved(0, size);
     }
 }

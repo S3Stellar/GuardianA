@@ -2,11 +2,14 @@ package com.example.guardiana.repository;
 
 import android.util.Log;
 
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.guardiana.App;
 import com.example.guardiana.model.Address;
 import com.example.guardiana.services.WebAddressService;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,14 +22,14 @@ import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
 public class AddressRepository {
+    private static final MutableLiveData<List<Address>> addressesMutableLiveData = new MutableLiveData<>();
     private static AddressRepository instance;
-    private static MutableLiveData<List<Address>> addressesMutableLiveData = new MutableLiveData<>();
     private static WebAddressService addressApi;
 
-    public static AddressRepository getInstance() {
+    public static synchronized AddressRepository getInstance() {
         if (instance == null) {
             instance = new AddressRepository();
-            addressesMutableLiveData.setValue(new ArrayList<>());
+//            addressesMutableLiveData.setValue(new ArrayList<>());
             addressApi = new Retrofit.Builder()
                     .baseUrl(WebAddressService.URL)
                     .addConverterFactory(JacksonConverterFactory.create()).build().create(WebAddressService.class);
@@ -38,32 +41,31 @@ public class AddressRepository {
 
     }
 
-    public MutableLiveData<List<Address>> getAllAddresses(String type, String value, String sortBy, String sortOrder, int page, int size) {
-        addressApi.getAddressesByEmail(App.getUserId(), type, value, sortBy, sortOrder, page, size).enqueue(new Callback<Address[]>() {
+    public MutableLiveData<List<Address>> getAllAddresses(String userId, String type, String value, String sortBy, String sortOrder, int page, int size) {
+        addressApi.getAddressesByEmail(userId, type, value, sortBy, sortOrder, page, size).enqueue(new Callback<Address[]>() {
             @Override
-            public void onResponse(Call<Address[]> call, Response<Address[]> response) {
-                if(response != null) {
+            public void onResponse(@NotNull Call<Address[]> call, @NotNull Response<Address[]> response) {
+                if (response.body() != null) {
                     addressesMutableLiveData.setValue(new ArrayList<>(Arrays.asList(response.body())));
-                    Log.i("TAG", "onResponseGetAll: ");
                 }
             }
 
             @Override
-            public void onFailure(Call<Address[]> call, Throwable t) {
+            public void onFailure(@NotNull Call<Address[]> call, @NotNull Throwable t) {
 
             }
         });
         return addressesMutableLiveData;
     }
 
-    public void create(Address address){
+
+    public void create(Address address) {
         addressApi.create(address).enqueue(new Callback<Address>() {
             @Override
-            public void onResponse(Call<Address> call, Response<Address> response) {
-                if (response != null) {
-                    List<Address> newList = addressesMutableLiveData.getValue();
+            public void onResponse(@NotNull Call<Address> call, @NotNull Response<Address> response) {
+                if (response.body() != null) {
+                    List<Address> newList = new ArrayList<>(addressesMutableLiveData.getValue());
                     newList.add(0, response.body());
-                    Log.i("TAG", "onResponse: " + newList);
                     addressesMutableLiveData.setValue(newList);
                 }
             }
@@ -73,5 +75,9 @@ public class AddressRepository {
                 Log.d("TAG", "onFailure: create failed " + t.getMessage());
             }
         });
+    }
+
+    public LiveData<Call<Address[]>> getLive(String userId, String type, String value, String sortBy, String sortOrder, int page, int size) {
+        return addressApi.getAddressesByEmail1(userId, type, value, sortBy, sortOrder, page, size);
     }
 }

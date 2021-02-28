@@ -82,15 +82,23 @@ public class Address {
         this.cityAddress = cityAddress;
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Address address = (Address) o;
-        return Objects.equals(cityName, address.cityName) &&
+        return Objects.equals(id, address.id) &&
+                Objects.equals(user, address.user) &&
                 Objects.equals(cityAddress, address.cityAddress) &&
-                Objects.equals(location, address.location) &&
-                Objects.equals(createdTimestamp, address.createdTimestamp);
+                Objects.equals(cityName, address.cityName) &&
+                Objects.equals(createdTimestamp, address.createdTimestamp) &&
+                Objects.equals(location, address.location);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, user, cityAddress, cityName, createdTimestamp, location);
     }
 
     @Override

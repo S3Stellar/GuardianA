@@ -37,6 +37,7 @@ public interface WebElementService {
                                                     @Query("page") int page,
                                                     @Query("size") int size);
 
+
     @GET(".")
     Call<Element[]> getAllElementsByFilters(@Query("type") String type,
                                             @Query("value") String value,

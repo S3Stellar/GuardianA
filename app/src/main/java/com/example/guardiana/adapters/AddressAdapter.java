@@ -1,22 +1,43 @@
 package com.example.guardiana.adapters;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.guardiana.R;
 import com.example.guardiana.model.Address;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class AddressAdapter extends RecyclerView.Adapter<AddressAdapter.AddressViewHolder> {
+public class AddressAdapter extends ListAdapter<Address, AddressAdapter.AddressViewHolder> {
 
-    private List<Address> addressList;
     private OnItemClickListener onItemClickListener;
+
+    public AddressAdapter() {
+        super(DIFF_CALLBACK);
+    }
+
+    public static final DiffUtil.ItemCallback<Address> DIFF_CALLBACK = new DiffUtil.ItemCallback<Address>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull Address oldItem, @NonNull Address newItem) {
+//            Log.i("TAG", "areItemsTheSame: " + oldItem.getCityName().equals(newItem.getCityName()));
+            return oldItem.getCityName().equals(newItem.getCityName());
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull Address oldItem, @NonNull Address newItem) {
+            return oldItem.getCreatedTimestamp().equals(newItem.getCreatedTimestamp());
+        }
+
+    };
 
     public interface OnItemClickListener {
         void onItemClick(int position);
@@ -26,10 +47,6 @@ public class AddressAdapter extends RecyclerView.Adapter<AddressAdapter.AddressV
         this.onItemClickListener = onItemClickListener;
     }
 
-    public AddressAdapter(List<Address> addressList) {
-        this.addressList = addressList;
-
-    }
 
     @NonNull
     @Override
@@ -40,14 +57,14 @@ public class AddressAdapter extends RecyclerView.Adapter<AddressAdapter.AddressV
 
     @Override
     public void onBindViewHolder(@NonNull AddressViewHolder holder, int position) {
-        holder.city.setText(addressList.get(position).getCityName());
-        holder.cityAddress.setText(addressList.get(position).getCityAddress());
+        holder.city.setText(getItem(position).getCityName());
+        holder.cityAddress.setText(getItem(position).getCityAddress());
     }
 
-    @Override
-    public int getItemCount() {
-        return addressList.size();
-    }
+//    @Override
+//    public void submitList(final List<Address> list) {
+//        super.submitList(list != null ? new ArrayList<>(list) : null);
+//    }
 
     public static class AddressViewHolder extends RecyclerView.ViewHolder {
         public TextView city;
