@@ -4,8 +4,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Geocoder;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +14,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -30,8 +27,6 @@ import com.example.guardiana.SignInActivity;
 import com.example.guardiana.adapters.AddressAdapter;
 import com.example.guardiana.model.Address;
 import com.example.guardiana.model.Location;
-import com.example.guardiana.pageable.PageRequest;
-import com.example.guardiana.repository.AddressFirebaseRepository;
 import com.example.guardiana.viewmodel.AddressViewModel;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.common.api.Status;
@@ -43,7 +38,6 @@ import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
-import com.google.firebase.firestore.Query;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,9 +47,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import io.grpc.internal.ClientStream;
 
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
@@ -85,90 +77,55 @@ public class FragmentSearch extends Fragment {
 
 
 //        addressViewModel = new ViewModelProvider.AndroidViewModelFactory(getActivity().create(AddressViewModel.class);
+        final Observer<List<Address>> nameObserver = new Observer<List<Address>>() {
+            @Override
+            public void onChanged(List<Address> addresses) {
+                for(Address addr : addresses){
+                    Log.i(TAG, "nameObserver: " +  addr);
+                }
+               // List<Address> list = new ArrayList<>(addressAdapter.getCurrentList());
+               // list.addAll(addresses);
+                /*
+
+                    pageSize = 10
+                    8
+                    currPage = list.size() / pageSize
+                    offset
+                 */
+                addressAdapter.submitList(addresses);
+
+            }
+        };
+        final Observer<List<Address>> nameObserver1 = new Observer<List<Address>>() {
+            @Override
+            public void onChanged(List<Address> addresses) {
+                ArrayList<Address> arr = new ArrayList<>(addresses);
+                addressAdapter.submitList(arr, ()-> recyclerView.smoothScrollToPosition(0));
+
+            }
+        };
+        addressViewModel.getAllAddresses("jonathan@gmail.com", "", "", "", "", page, 2).observe(requireActivity(), nameObserver);
 
         view.findViewById(R.id.floatingActionButton3).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                addressViewModel.create(
-//                        new Address("Jonathan@gmail.com", "afff", "lotus" + page1++, new Date(), new Location(55, 32)));
+                addressViewModel.create(
+                        new Address("jonathan@gmail.com", "afff", "lotus" + page1++, new Date(), new Location(55, 32))).observe(requireActivity(),
+                        nameObserver1);
 
-                final Observer<List<Address>> nameObserver = new Observer<List<Address>>() {
-                    @Override
-                    public void onChanged(List<Address> addresses) {
-
-                        List<Address> list = new ArrayList<>(addressAdapter.getCurrentList());
-                        list.addAll(addresses);
-                        addressAdapter.submitList(list);
-
-                    }
-
-                };
-
-                LiveData<List<Address>>ll =  addressViewModel.getAllAddresses("Jonathan@gmail.com", "", "", "", "", page++, 2);
-                ll.observe(requireActivity(),nameObserver);
-                ll.removeObserver(nameObserver);
-//                        addressViewModel.getAllAddresses("Jonathan@gmail.com", "", "", "", "", page++, 2).observe(requireActivity(),
-//                                addresses -> {
-////                            for(Address address: addresses){
-////                                Log.i(TAG, "The Value from the server is : " + address);
-////                            }
-//                                    Log.i(TAG, "onClick: ");
-//                                    List<Address> list = new ArrayList<>(addressAdapter.getCurrentList());
-//                                    list.addAll(addresses);
-//                            for(Address ad: addressAdapter.getCurrentList()){
-//                                Log.i(TAG, "Current List: " + ad);
-//                            }
-//                            for(Address ad : addresses){
-//                                if(!addressAdapter.getCurrentList().contains(ad)){
-//                                    Log.i(TAG, "Added new list: " + ad);
-//                                    list.add(ad);
-//                                }else {
-//                                    Log.i(TAG, "Falling angle: " + ad);
-//                                }
-////                            }
-//                                    addressAdapter.submitList(null);
-//                                    Log.i(TAG, "get curr list: " + addressAdapter.getCurrentList());
-//                                    addressAdapter.submitList(list);
-//                                });
             }
         });
 
 
-//        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-//            @Override
-//            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-//                super.onScrollStateChanged(recyclerView, newState);
-//                if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-
-//                    addressViewModel.getAllAddresses("Jonathan@gmail.com", "", "", "", "", ++page, 2).observe(requireActivity(),
-//                            addresses ->{
-//
-////                                Log.i(TAG, "Page number is: " + page);
-//                                for(Address addr : addresses){
-//                                    Log.i(TAG, "Address is: " + addr);
-//                                }
-//                                List<Address> list = new ArrayList<>();
-//                                for(Address addr : addressAdapter.getCurrentList()){
-//                                        list.add(addr);
-//                                }
-//                                list.addAll(addresses);
-//                                Log.i(TAG, "onScrollStateChanged: " + addressAdapter.getCurrentList());
-//                                List<Address> list = new ArrayList<>();
-//                                Collections.copy(list, addressAdapter.getCurrentList());
-//                                list.addAll(addresses);
-//                                addressAdapter.getCurrentList().addAll(addresses);
-//                                List<Address> list = new ArrayList<>(addressAdapter.getCurrentList());
-//                                List<Address> list = new ArrayList<>(addresses);
-//                                list.addAll(addressAdapter.getCurrentList());
-//
-//                                addressAdapter.submitList(list); // if(newList == currList)
-
-//                            });
-
-
-//                }
-//            }
-//        });
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    addressViewModel.getAllAddresses("jonathan@gmail.com", "", "", "", "", ++page, 2).observe(requireActivity(), nameObserver);
+                }
+            }
+        });
         ((TextView) view.findViewById(R.id.welcomeText)).setText(String.format("Hello %s !", App.getUserId()));
         setupPowerOffButton();
         initializePlacesApiKey();

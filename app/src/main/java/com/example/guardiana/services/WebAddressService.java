@@ -46,5 +46,7 @@ public interface WebAddressService {
                                         @Query("sortOrder") String sortOrder,
                                         @Query("page") int page,
                                         @Query("size") int size);
+
+    Call<Address[]> getSomething();
 }
 

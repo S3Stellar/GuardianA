@@ -29,7 +29,7 @@ public class AddressRepository {
     public static synchronized AddressRepository getInstance() {
         if (instance == null) {
             instance = new AddressRepository();
-//            addressesMutableLiveData.setValue(new ArrayList<>());
+            addressesMutableLiveData.setValue(new ArrayList<>());
             addressApi = new Retrofit.Builder()
                     .baseUrl(WebAddressService.URL)
                     .addConverterFactory(JacksonConverterFactory.create()).build().create(WebAddressService.class);
@@ -46,7 +46,9 @@ public class AddressRepository {
             @Override
             public void onResponse(@NotNull Call<Address[]> call, @NotNull Response<Address[]> response) {
                 if (response.body() != null) {
-                    addressesMutableLiveData.setValue(new ArrayList<>(Arrays.asList(response.body())));
+                    ArrayList<Address> arrayList = new ArrayList<>(addressesMutableLiveData.getValue());
+                    arrayList.addAll(Arrays.asList(response.body()));
+                    addressesMutableLiveData.setValue(arrayList);
                 }
             }
 
@@ -59,7 +61,8 @@ public class AddressRepository {
     }
 
 
-    public void create(Address address) {
+
+    public LiveData<List<Address>> create(Address address) {
         addressApi.create(address).enqueue(new Callback<Address>() {
             @Override
             public void onResponse(@NotNull Call<Address> call, @NotNull Response<Address> response) {
@@ -75,9 +78,33 @@ public class AddressRepository {
                 Log.d("TAG", "onFailure: create failed " + t.getMessage());
             }
         });
+        return addressesMutableLiveData;
     }
 
     public LiveData<Call<Address[]>> getLive(String userId, String type, String value, String sortBy, String sortOrder, int page, int size) {
         return addressApi.getAddressesByEmail1(userId, type, value, sortBy, sortOrder, page, size);
+    }
+    private MutableLiveData<Call> response = new MutableLiveData<>();
+    /*
+        Map<>
+        Call
+     */
+//    public void trigger(RequestAPI page) {
+//        response.setValue(page);
+//    }
+    public void doSomething() {
+
+        Call w = addressApi.getSomething();
+        addressApi.getSomething().enqueue(new Callback<Address[]>() {
+            @Override
+            public void onResponse(Call<Address[]> call, Response<Address[]> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<Address[]> call, Throwable t) {
+
+            }
+        });
     }
 }
