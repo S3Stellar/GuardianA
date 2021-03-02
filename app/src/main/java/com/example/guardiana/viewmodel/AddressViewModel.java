@@ -29,8 +29,8 @@ public class AddressViewModel extends ViewModel  {
         return addressRepository.create(address);
     }
 
-    public LiveData<List<Address>> getAllAddresses(String userId, String type, String value, String sortBy, String sortOrder, int page, int size) {
-        return addressRepository.getAllAddresses(userId, type, value, sortBy, sortOrder, page, size);
+    public LiveData<List<Address>> getAllAddresses(String userId, String type, String value, String sortBy, String sortOrder, int page, int size, int offset) {
+        return addressRepository.getAllAddresses(userId, type, value, sortBy, sortOrder, page, size, offset);
     }
     public LiveData<Call<Address[]>> getLive(String userId, String type, String value, String sortBy, String sortOrder, int page, int size) {
         return addressRepository.getLive(userId, type, value, sortBy, sortOrder, page, size);

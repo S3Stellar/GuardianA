@@ -41,13 +41,15 @@ public class AddressRepository {
 
     }
 
-    public MutableLiveData<List<Address>> getAllAddresses(String userId, String type, String value, String sortBy, String sortOrder, int page, int size) {
+    public MutableLiveData<List<Address>> getAllAddresses(String userId, String type, String value, String sortBy, String sortOrder, int page, int size, int offset) {
         addressApi.getAddressesByEmail(userId, type, value, sortBy, sortOrder, page, size).enqueue(new Callback<Address[]>() {
             @Override
             public void onResponse(@NotNull Call<Address[]> call, @NotNull Response<Address[]> response) {
                 if (response.body() != null) {
                     ArrayList<Address> arrayList = new ArrayList<>(addressesMutableLiveData.getValue());
-                    arrayList.addAll(Arrays.asList(response.body()));
+                    List<Address> responseList = Arrays.asList(response.body());
+                    responseList.subList(0, Math.min(offset, responseList.size())).clear();
+                    arrayList.addAll(responseList);
                     addressesMutableLiveData.setValue(arrayList);
                 }
             }

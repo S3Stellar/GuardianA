@@ -64,7 +64,9 @@ public class FragmentSearch extends Fragment {
     private View view;
     private LinearLayoutManager linearLayoutManager;
     private static int page1 = 0;
-    private static int page = 0;
+    private static final int PAGE_SIZE = 5;
+    private static int currentPage = 0;
+    private static int offset = 0;
 
     @Nullable
     @Override
@@ -76,42 +78,44 @@ public class FragmentSearch extends Fragment {
         addressViewModel = new ViewModelProvider(requireActivity()).get(AddressViewModel.class);
 
 
-//        addressViewModel = new ViewModelProvider.AndroidViewModelFactory(getActivity().create(AddressViewModel.class);
-        final Observer<List<Address>> nameObserver = new Observer<List<Address>>() {
+        final Observer<List<Address>> getAllAddressesObserver = new Observer<List<Address>>() {
             @Override
             public void onChanged(List<Address> addresses) {
-                for(Address addr : addresses){
-                    Log.i(TAG, "nameObserver: " +  addr);
-                }
-               // List<Address> list = new ArrayList<>(addressAdapter.getCurrentList());
-               // list.addAll(addresses);
-                /*
 
-                    pageSize = 10
-                    8
-                    currPage = list.size() / pageSize
-                    offset
-                 */
+                Log.i(TAG, "onChangedGetAllBefore: offset = " + offset + " , currentPage = " + currentPage + " , addressSize = " + addresses.size());
+                currentPage = (addresses.size() + PAGE_SIZE - 1) / PAGE_SIZE;
+                offset = (PAGE_SIZE * currentPage) - addresses.size();
+                Log.i(TAG, "onChangedGetAllAfter: offset = " + offset + " , currentPage = " + currentPage);
                 addressAdapter.submitList(addresses);
 
             }
         };
-        final Observer<List<Address>> nameObserver1 = new Observer<List<Address>>() {
+        final Observer<List<Address>> createAddressObserver = new Observer<List<Address>>() {
             @Override
             public void onChanged(List<Address> addresses) {
-                ArrayList<Address> arr = new ArrayList<>(addresses);
-                addressAdapter.submitList(arr, ()-> recyclerView.smoothScrollToPosition(0));
+                if (addresses.size() != addressAdapter.getCurrentList().size()) {
+                    Log.i(TAG, "onChangedCreateBefore: offset = " + offset + " , currentPage = " + currentPage);
+                    //offset++;
+                    if (offset == PAGE_SIZE) {
+                        currentPage++;
+                        offset = 0;
+                    }
+                    Log.i(TAG, "onChangedCreateAfter: offset = " + offset + " , currentPage = " + currentPage);
+                    // ArrayList<Address> arr = new ArrayList<>(addresses);
+                    Log.i(TAG, "onChanged: SMOOTH SCROLL!");
+                    addressAdapter.submitList(addresses, () -> recyclerView.smoothScrollToPosition(0));
 
+                }
             }
         };
-        addressViewModel.getAllAddresses("jonathan@gmail.com", "", "", "", "", page, 2).observe(requireActivity(), nameObserver);
+        addressViewModel.getAllAddresses("jonathan@gmail.com", "", "", "", "", currentPage, PAGE_SIZE, offset).observe(requireActivity(), getAllAddressesObserver);
 
         view.findViewById(R.id.floatingActionButton3).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 addressViewModel.create(
                         new Address("jonathan@gmail.com", "afff", "lotus" + page1++, new Date(), new Location(55, 32))).observe(requireActivity(),
-                        nameObserver1);
+                        createAddressObserver);
 
             }
         });
@@ -122,7 +126,7 @@ public class FragmentSearch extends Fragment {
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
                 if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    addressViewModel.getAllAddresses("jonathan@gmail.com", "", "", "", "", ++page, 2).observe(requireActivity(), nameObserver);
+                    addressViewModel.getAllAddresses("jonathan@gmail.com", "", "", "", "", currentPage, PAGE_SIZE, offset).observe(requireActivity(), getAllAddressesObserver);
                 }
             }
         });
@@ -155,7 +159,6 @@ public class FragmentSearch extends Fragment {
         return view;
 
     }
-
 
 
     private void initializePlacesApiKey() {
@@ -224,7 +227,7 @@ public class FragmentSearch extends Fragment {
         recyclerView = view.findViewById(R.id.fragment_search_recycler_view);
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
-        //recyclerView.setHasFixedSize(true);
+        recyclerView.setHasFixedSize(true);
         addressAdapter = new AddressAdapter();
         recyclerView.setAdapter(addressAdapter);
     }
@@ -245,7 +248,7 @@ public class FragmentSearch extends Fragment {
 
     private void logOutUser() {
         manager.setLoggedIn(false);
-     //   clearRecycleView();
+        //   clearRecycleView();
     }
 
     public void clearRecycleView() {
