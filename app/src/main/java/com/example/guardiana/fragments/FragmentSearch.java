@@ -1,7 +1,6 @@
 package com.example.guardiana.fragments;
 
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Geocoder;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,7 +13,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -25,13 +23,14 @@ import com.example.guardiana.PreferencesManager;
 import com.example.guardiana.R;
 import com.example.guardiana.SignInActivity;
 import com.example.guardiana.adapters.AddressAdapter;
+import com.example.guardiana.databinding.FragmentSearchBinding;
 import com.example.guardiana.model.Address;
 import com.example.guardiana.model.Location;
+import com.example.guardiana.repository.AddressResponse;
 import com.example.guardiana.viewmodel.AddressViewModel;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.model.TypeFilter;
@@ -40,14 +39,11 @@ import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-import io.grpc.internal.ClientStream;
 
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
@@ -57,40 +53,40 @@ public class FragmentSearch extends Fragment {
 
     private static final int AUTOCOMPLETE_REQUEST_CODE = 991;
     private AddressViewModel addressViewModel;
-    private RecyclerView recyclerView;
     private AddressAdapter addressAdapter;
     private PreferencesManager manager;
-    private EditText mSearchText;
-    private View view;
-    private LinearLayoutManager linearLayoutManager;
     private static int page1 = 0;
     private static final int PAGE_SIZE = 5;
-    private static int currentPage = 0;
-    private static int offset = 0;
+    private int currentPage = 0;
+    private int offset = 0;
     private Runnable r;
+    private FragmentSearchBinding fragmentSearchBinding;
 
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_search, container, false);
-        mSearchText = view.findViewById(R.id.search_bar);
+
+        fragmentSearchBinding = FragmentSearchBinding.inflate(getLayoutInflater(), container, false);
         setupRecyclerView();
 
         addressViewModel = new ViewModelProvider(requireActivity()).get(AddressViewModel.class);
 
-        r = () -> recyclerView.smoothScrollToPosition(0);
-
-        final Observer<List<Address>> observer = addresses -> {
-            addressAdapter.submitList(addresses, r);
+        final Observer<AddressResponse> observer = response -> {
+            if (response.getFlag() == 0) {
+                r = null;
+            } else {
+                r = () -> fragmentSearchBinding.recyclerView.smoothScrollToPosition(0);
+            }
+            addressAdapter.submitList(response.getAddressList(), r);
         };
 
         addressViewModel.getAllAddresses("jonathan@gmail.com", "", "", "", "", currentPage, PAGE_SIZE, offset).observe(requireActivity(), observer);
 
-        view.findViewById(R.id.floatingActionButton3).setOnClickListener(new View.OnClickListener() {
+        fragmentSearchBinding.addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                r = () -> recyclerView.smoothScrollToPosition(0);
+                r = () -> fragmentSearchBinding.recyclerView.smoothScrollToPosition(0);
                 addressViewModel.create(
                         new Address("jonathan@gmail.com", "afff", "lotus" + page1++, new Date(), new Location(55, 32))).observe(requireActivity(),
                         observer);
@@ -98,12 +94,11 @@ public class FragmentSearch extends Fragment {
         });
 
 
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        fragmentSearchBinding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
                 if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    r = null;
                     currentPage = addressAdapter.getCurrentList().size() / PAGE_SIZE;
                     offset = addressAdapter.getCurrentList().size() % PAGE_SIZE; // num of addresses to delete from end
                     addressViewModel.getAllAddresses("jonathan@gmail.com", "", "", "", "", currentPage, PAGE_SIZE, offset).observe(requireActivity(), observer);
@@ -111,32 +106,19 @@ public class FragmentSearch extends Fragment {
             }
         });
 
-        ((TextView) view.findViewById(R.id.welcomeText)).setText(String.format("Hello %s !", App.getUserId()));
+        fragmentSearchBinding.welcomeText.setText(String.format("Hello %s !", App.getUserId()));
         setupPowerOffButton();
-        initializePlacesApiKey();
 
         addressAdapter.setOnItemClickListener(position -> {
-            //Toast.makeText(getContext(), "Item at position: " + position + " pressed", Toast.LENGTH_SHORT).show();
             Log.i("TAG", "onItemClick: " + position);
         });
 
 
-        mSearchText.setFocusable(false);
-        mSearchText.setOnClickListener(this::startAutocompleteActivity);
-        return view;
-
+        fragmentSearchBinding.searchBar.setFocusable(false);
+        fragmentSearchBinding.searchBar.setOnClickListener(this::startAutocompleteActivity);
+        return fragmentSearchBinding.getRoot();
     }
 
-
-    private void initializePlacesApiKey() {
-        try {
-            String mapApiKey = getContext().getPackageManager().getApplicationInfo(getContext().getPackageName(),
-                    PackageManager.GET_META_DATA).metaData.getString("com.google.android.geo.API_KEY");
-            Places.initialize(getContext(), mapApiKey);
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
 
     public void startAutocompleteActivity(View view) {
         Intent intent = new Autocomplete.IntentBuilder(
@@ -191,36 +173,23 @@ public class FragmentSearch extends Fragment {
     }
 
     private void setupRecyclerView() {
-        recyclerView = view.findViewById(R.id.fragment_search_recycler_view);
-        linearLayoutManager = new LinearLayoutManager(getContext());
-        recyclerView.setLayoutManager(linearLayoutManager);
-        recyclerView.setHasFixedSize(true);
+        fragmentSearchBinding.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        fragmentSearchBinding.recyclerView.setHasFixedSize(true);
         addressAdapter = new AddressAdapter();
-        recyclerView.setAdapter(addressAdapter);
+        fragmentSearchBinding.recyclerView.setAdapter(addressAdapter);
     }
 
     private void setupPowerOffButton() {
         manager = new PreferencesManager(App.getContext());
-        view.findViewById(R.id.poweroffButt).setOnClickListener(v -> AuthUI.getInstance()
+        fragmentSearchBinding.poweroffButt.setOnClickListener(v -> AuthUI.getInstance()
                 .signOut(getContext())
                 .addOnCompleteListener(task -> {
-                    logOutUser();
+                    manager.setLoggedIn(false);
                     startActivity(new Intent(getContext(), SignInActivity.class));
                     getActivity().finish();
                     //addressFirebaseRepository.setLastResult(null);
                     //addressFirebaseRepository = AddressFirebaseRepository.getInstance();
                 }));
 
-    }
-
-    private void logOutUser() {
-        manager.setLoggedIn(false);
-        //   clearRecycleView();
-    }
-
-    public void clearRecycleView() {
-        //int size = addressList.size();
-        //addressList.clear();
-        //   addressAdapter.notifyItemRangeRemoved(0, size);
     }
 }

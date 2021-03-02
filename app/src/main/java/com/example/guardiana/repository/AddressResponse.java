@@ -13,6 +13,10 @@ public class AddressResponse {
     public AddressResponse() {
     }
 
+    public AddressResponse(List<Address> addressList) {
+        this.addressList = addressList;
+    }
+
     public AddressResponse(List<Address> addressList, int statusCode, String message, int flag) {
         this.addressList = addressList;
         this.statusCode = statusCode;
