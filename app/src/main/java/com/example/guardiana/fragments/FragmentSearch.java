@@ -7,20 +7,18 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.guardiana.App;
 import com.example.guardiana.PreferencesManager;
-import com.example.guardiana.R;
 import com.example.guardiana.SignInActivity;
 import com.example.guardiana.adapters.AddressAdapter;
 import com.example.guardiana.databinding.FragmentSearchBinding;
@@ -45,6 +43,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
+
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
 import static android.content.ContentValues.TAG;
@@ -52,16 +52,16 @@ import static android.content.ContentValues.TAG;
 public class FragmentSearch extends Fragment {
 
     private static final int AUTOCOMPLETE_REQUEST_CODE = 991;
+    private FragmentSearchBinding fragmentSearchBinding;
     private AddressViewModel addressViewModel;
     private AddressAdapter addressAdapter;
     private PreferencesManager manager;
-    private static int page1 = 0;
-    private static final int PAGE_SIZE = 5;
+    private final int PAGE_SIZE = 5;
     private int currentPage = 0;
     private int offset = 0;
-    private Runnable r;
-    private FragmentSearchBinding fragmentSearchBinding;
-
+    private static int count = 0;
+    private Runnable scrollRunnable;
+    private Observer<AddressResponse> observer;
 
     @Nullable
     @Override
@@ -72,25 +72,24 @@ public class FragmentSearch extends Fragment {
 
         addressViewModel = new ViewModelProvider(requireActivity()).get(AddressViewModel.class);
 
-        final Observer<AddressResponse> observer = response -> {
-            if (response.getFlag() == 0) {
-                r = null;
+        observer = response -> {
+            Log.i(TAG, "onCreateView: " + response.getStatusCode());
+            if (response.getStatusCode() == 200) {
+                scrollRunnable = response.getFlag() == 0 ? null : () -> fragmentSearchBinding.recyclerView.smoothScrollToPosition(0);
+                addressAdapter.submitList(response.getAddressList(), scrollRunnable);
             } else {
-                r = () -> fragmentSearchBinding.recyclerView.smoothScrollToPosition(0);
+                new SweetAlertDialog(getContext()).setTitleText("Error").setContentText(response.getMessage()).show();
             }
-            addressAdapter.submitList(response.getAddressList(), r);
         };
 
-        addressViewModel.getAllAddresses("jonathan@gmail.com", "", "", "", "", currentPage, PAGE_SIZE, offset).observe(requireActivity(), observer);
+        addressViewModel.getAllAddresses(App.getUserId(), "", "", "", "", currentPage, PAGE_SIZE, offset).observe(requireActivity(), observer);
 
-        fragmentSearchBinding.addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                r = () -> fragmentSearchBinding.recyclerView.smoothScrollToPosition(0);
-                addressViewModel.create(
-                        new Address("jonathan@gmail.com", "afff", "lotus" + page1++, new Date(), new Location(55, 32))).observe(requireActivity(),
-                        observer);
-            }
+
+        fragmentSearchBinding.addButton.setOnClickListener(v -> {
+            Log.i(TAG, "onCreateView: " + App.getUserId());
+            addressViewModel.create(
+                    new Address(App.getUserId(), "afff", "lotus" + count++, new Date(), new Location(55, 32))).observe(requireActivity(),
+                    observer);
         });
 
 
@@ -101,7 +100,7 @@ public class FragmentSearch extends Fragment {
                 if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
                     currentPage = addressAdapter.getCurrentList().size() / PAGE_SIZE;
                     offset = addressAdapter.getCurrentList().size() % PAGE_SIZE; // num of addresses to delete from end
-                    addressViewModel.getAllAddresses("jonathan@gmail.com", "", "", "", "", currentPage, PAGE_SIZE, offset).observe(requireActivity(), observer);
+                    addressViewModel.getAllAddresses(App.getUserId(), "", "", "", "", currentPage, PAGE_SIZE, offset).observe(requireActivity(), observer);
                 }
             }
         });
@@ -113,12 +112,43 @@ public class FragmentSearch extends Fragment {
             Log.i("TAG", "onItemClick: " + position);
         });
 
-
+        cardSwipeListener();
         fragmentSearchBinding.searchBar.setFocusable(false);
         fragmentSearchBinding.searchBar.setOnClickListener(this::startAutocompleteActivity);
         return fragmentSearchBinding.getRoot();
     }
 
+    private void cardSwipeListener() {
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+                int position = viewHolder.getAdapterPosition();
+                Address undoSave = addressAdapter.getCurrentList().get(position);
+                addressViewModel.delete(undoSave.getId(),position);
+                //Snackbar.make(recyclerview, "Preference Deleted", LENGTH_LONG).setAction("Undo", new UndoListener(undoSave)).show();
+
+            }
+        }).attachToRecyclerView(fragmentSearchBinding.recyclerView);
+    }
+
+//    private class UndoListener implements View.OnClickListener {
+//        private final SavedPref undoSave;
+//
+//        public UndoListener(SavedPref undoSave) {
+//            this.undoSave = undoSave;
+//        }
+//
+//        @Override
+//        public void onClick(View view) {
+//            myListViewModel.addSavedPref(undoSave);
+//        }
+//    }
 
     public void startAutocompleteActivity(View view) {
         Intent intent = new Autocomplete.IntentBuilder(
@@ -142,7 +172,6 @@ public class FragmentSearch extends Fragment {
         if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 Place place = Autocomplete.getPlaceFromIntent(data);
-
                 LatLng latLng = place.getLatLng();
                 double myLat = latLng.latitude;
                 double myLng = latLng.longitude;
@@ -154,6 +183,9 @@ public class FragmentSearch extends Fragment {
                     e.printStackTrace();
 
                 }
+                addressViewModel.create(
+                        new Address(App.getUserId(), place.getName(), cityName, new Date(), new Location(myLat, myLng))).observe(requireActivity(),
+                        observer);
 
              /*   addressFirebaseRepository.save(new Address(cityName, place.getName(), new Location(myLat, myLng),
                         new Date()), data1 -> {

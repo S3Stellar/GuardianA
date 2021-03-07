@@ -2,6 +2,7 @@ package com.example.guardiana.repository;
 
 import com.example.guardiana.model.Address;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AddressResponse {
@@ -11,10 +12,16 @@ public class AddressResponse {
     private int flag;
 
     public AddressResponse() {
+        addressList = new ArrayList<>();
     }
 
     public AddressResponse(List<Address> addressList) {
         this.addressList = addressList;
+    }
+
+    public AddressResponse(int statusCode) {
+        this();
+        this.statusCode = statusCode;
     }
 
     public AddressResponse(List<Address> addressList, int statusCode, String message, int flag) {

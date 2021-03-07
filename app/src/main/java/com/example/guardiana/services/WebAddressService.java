@@ -14,7 +14,7 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface WebAddressService {
-    public static final String URL = "http://10.0.2.2:8088/addresses/";
+    public static final String URL = "http://10.0.2.2:8087/addresses/";
 
 
     @POST(".")
@@ -47,6 +47,8 @@ public interface WebAddressService {
                                         @Query("page") int page,
                                         @Query("size") int size);
 
-    Call<Address[]> getSomething();
+    @DELETE("{addressId}")
+    Call<Void> delete(@Path("addressId") String addressId);
+
 }
 
