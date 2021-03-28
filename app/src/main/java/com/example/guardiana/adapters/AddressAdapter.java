@@ -28,13 +28,12 @@ public class AddressAdapter extends ListAdapter<Address, AddressAdapter.AddressV
     public static final DiffUtil.ItemCallback<Address> DIFF_CALLBACK = new DiffUtil.ItemCallback<Address>() {
         @Override
         public boolean areItemsTheSame(@NonNull Address oldItem, @NonNull Address newItem) {
-//            Log.i("TAG", "areItemsTheSame: " + oldItem.getCityName().equals(newItem.getCityName()));
             return oldItem.getCityName().equals(newItem.getCityName());
         }
 
         @Override
         public boolean areContentsTheSame(@NonNull Address oldItem, @NonNull Address newItem) {
-            return oldItem.getCreatedTimestamp().equals(newItem.getCreatedTimestamp());
+            return oldItem.getId().equals(newItem.getId());
         }
 
     };
@@ -61,10 +60,11 @@ public class AddressAdapter extends ListAdapter<Address, AddressAdapter.AddressV
         holder.cityAddress.setText(getItem(position).getCityAddress());
     }
 
-//    @Override
-//    public void submitList(final List<Address> list) {
-//        super.submitList(list != null ? new ArrayList<>(list) : null);
-//    }
+
+    public Address getAddressPositionAt(int position) {
+        return getItem(position);
+    }
+
 
     public static class AddressViewHolder extends RecyclerView.ViewHolder {
         public TextView city;

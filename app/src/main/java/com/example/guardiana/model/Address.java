@@ -101,15 +101,22 @@ public class Address {
         return Objects.hash(id, user, cityAddress, cityName, createdTimestamp, location);
     }
 
-    @Override
-    public String toString() {
-        return "Address{" +
-                "id='" + id + '\'' +
-                ", user='" + user + '\'' +
-                ", cityAddress='" + cityAddress + '\'' +
-                ", cityName='" + cityName + '\'' +
-                ", createdTimestamp=" + createdTimestamp +
-                ", location=" + location +
-                '}';
-    }
+//    @Override
+//    public String toString() {
+//        return "Address{" +
+//                "id='" + id + '\'' +
+//                ", user='" + user + '\'' +
+//                ", cityAddress='" + cityAddress + '\'' +
+//                ", cityName='" + cityName + '\'' +
+//                ", createdTimestamp=" + createdTimestamp +
+//                ", location=" + location +
+//                '}';
+//    }
+@Override
+public String toString() {
+    return "Address{" +
+            "id='" + id + '\'' +
+            ", cityName='" + cityName + '\'' +
+           '}';
+}
 }

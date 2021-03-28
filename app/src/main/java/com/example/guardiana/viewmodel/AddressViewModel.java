@@ -28,8 +28,8 @@ public class AddressViewModel extends ViewModel {
         return addressRepository.getAllAddresses(userId, type, value, sortBy, sortOrder, page, size, offset);
     }
 
-    public LiveData<AddressResponse> delete(String addressId, int position){
-        return addressRepository.delete(addressId, position);
+    public LiveData<AddressResponse> delete(Address address){
+        return addressRepository.delete(address);
     }
 
 }
