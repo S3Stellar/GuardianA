@@ -16,7 +16,6 @@ public class AddressViewModel extends ViewModel {
     private final AddressRepository addressRepository;
 
     public AddressViewModel() {
-
         addressRepository = AddressRepository.getInstance();
     }
 
@@ -28,7 +27,11 @@ public class AddressViewModel extends ViewModel {
         return addressRepository.getAllAddresses(userId, type, value, sortBy, sortOrder, page, size, offset);
     }
 
-    public LiveData<AddressResponse> delete(Address address){
+    public LiveData<AddressResponse> getAllAddresses(String userId, int page, int size, int offset) {
+        return addressRepository.getAllAddresses(userId, page, size, offset);
+    }
+
+    public LiveData<AddressResponse> delete(Address address) {
         return addressRepository.delete(address);
     }
 

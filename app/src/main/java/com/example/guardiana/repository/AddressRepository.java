@@ -1,7 +1,5 @@
 package com.example.guardiana.repository;
 
-import android.util.Log;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -13,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import retrofit2.Call;
@@ -42,6 +39,15 @@ public class AddressRepository {
         return instance;
     }
 
+    /**
+     * Overloaded getAllAddresses with default values
+     *
+     * @param userId - current user session
+     * @param page   - current page which will be loaded from the database
+     * @param size   - number of pages which will be fetched
+     * @param offset - which indicate offset inside the page
+     * @return MutableLiveData<AddressResponse>
+     */
     public MutableLiveData<AddressResponse> getAllAddresses(String userId, String type, String value, String sortBy, String sortOrder, int page, int size, int offset) {
         addressApi.getAddressesByEmail(userId, type, value, sortBy, sortOrder, page, size).enqueue(new Callback<Address[]>() {
             @Override
@@ -75,6 +81,20 @@ public class AddressRepository {
         return addressesMutableLiveData;
     }
 
+    /**
+     * Overloaded getAllAddresses with default values
+     */
+    public MutableLiveData<AddressResponse> getAllAddresses(String userId, int page, int size, int offset) {
+        return getAllAddresses(userId, "", "", "", "", page, size, offset);
+    }
+
+
+    /**
+     * Create a new address entry in the database
+     *
+     * @param address
+     * @return MutableLiveData<AddressResponse>
+     */
     public LiveData<AddressResponse> create(Address address) {
 
         addressApi.create(address).enqueue(new Callback<Address>() {
@@ -83,7 +103,7 @@ public class AddressRepository {
                 if (response.body() != null) {
                     // Create new AddressResponse
                     AddressResponse addressResponse = new AddressResponse(
-                            new ArrayList<>(addressesMutableLiveData.getValue().getAddressList()), response.message(), response.code(),1
+                            new ArrayList<>(addressesMutableLiveData.getValue().getAddressList()), response.message(), response.code(), 1
                     );
 
                     // Add the result at the front of the list
@@ -102,7 +122,14 @@ public class AddressRepository {
         return addressesMutableLiveData;
     }
 
-    public LiveData<AddressResponse> delete(Address address) {
+
+    /**
+     * Delete an entry from the database
+     *
+     * @param address
+     * @return MutableLiveData<AddressResponse>
+     */
+    public MutableLiveData<AddressResponse> delete(Address address) {
         addressApi.delete(address.getId()).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(@NotNull Call<Void> call, @NotNull Response<Void> response) {

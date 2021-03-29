@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -19,9 +20,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.guardiana.App;
 import com.example.guardiana.PreferencesManager;
+import com.example.guardiana.R;
 import com.example.guardiana.SignInActivity;
 import com.example.guardiana.adapters.AddressAdapter;
 import com.example.guardiana.databinding.FragmentSearchBinding;
+import com.example.guardiana.dialogs.BottomSheetDialog;
 import com.example.guardiana.model.Address;
 import com.example.guardiana.model.Location;
 import com.example.guardiana.repository.AddressResponse;
@@ -38,11 +41,13 @@ import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
@@ -69,37 +74,44 @@ public class FragmentSearch extends Fragment {
         // Bind the view to the fragment
         fragmentSearchBinding = FragmentSearchBinding.inflate(getLayoutInflater(), container, false);
 
-        // Setup recycler view
+        // Setup views
         setupRecyclerView();
+        setupPowerOffButton();
+        setupRemoveAddress();
+        setupSearchBar();
+        setWelcomeHeader();
 
         // Setup and initialize the view model to the current fragment
-        setupViewModel();
-
-        // Set the welcome header with the current user
-        setWelcomeHeader();
+        initViewModel();
 
         // Set observer
         observer = setObserver();
 
-        // Initialize the first page
+        // Initialize the first address page
         initAddressPage();
-
-        //TODO: only for testing
-        testAddPage();
 
         // Initialize scroll listener
         initScrollListener();
 
-        // Setup the power button
-        setupPowerOffButton();
+        //TODO: only for testing
+        testAddPage();
 
-        setupRemoveAddress();
-
-        setupSearchBar();
-
+        setupSelectionAction();
         return fragmentSearchBinding.getRoot();
     }
 
+    /**
+     * Initialize the first page address and observes to changes
+     *
+     */
+    private void initAddressPage() {
+        addressViewModel.getAllAddresses(App.getUserId(), currentPage, PAGE_SIZE, offset).observe(requireActivity(), observer);
+    }
+
+    /**
+     * Initialize the scroll listener which return the next available page
+     *
+     */
     private void initScrollListener() {
         fragmentSearchBinding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -108,17 +120,17 @@ public class FragmentSearch extends Fragment {
                 if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
                     currentPage = addressAdapter.getCurrentList().size() / PAGE_SIZE;
                     offset = addressAdapter.getCurrentList().size() % PAGE_SIZE; // num of addresses to delete from end
-                    addressViewModel.getAllAddresses(App.getUserId(), "", "", "", "", currentPage, PAGE_SIZE, offset).observe(requireActivity(), observer);
+                    addressViewModel.getAllAddresses(App.getUserId(), currentPage, PAGE_SIZE, offset).observe(requireActivity(), observer);
                 }
             }
         });
 
     }
 
-    private void initAddressPage() {
-        addressViewModel.getAllAddresses(App.getUserId(), "", "", "", "", currentPage, PAGE_SIZE, offset).observe(requireActivity(), observer);
-    }
-
+    /**
+     * Setup swipe listener which triggered when the user swipe a cell and remove the item from the list
+     *
+     */
     private void setupRemoveAddress() {
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
@@ -128,17 +140,20 @@ public class FragmentSearch extends Fragment {
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-
                 int position = viewHolder.getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     addressViewModel.delete(addressAdapter.getAddressPositionAt(position)).observe(requireActivity(), observer);
                 }
-
             }
         }).attachToRecyclerView(fragmentSearchBinding.recyclerView);
     }
 
 
+    /**
+     * Set an observer which gets triggered when an action(add, remove, scroll) occurred on the recycler view
+     *
+     * @return Observer<AddressResponse>
+     */
     private Observer<AddressResponse> setObserver() {
         return (response) -> {
             fragmentSearchBinding.recyclerView.getRecycledViewPool().clear();
@@ -151,32 +166,31 @@ public class FragmentSearch extends Fragment {
         };
     }
 
-    private void setupSearchBar(){
-        fragmentSearchBinding.searchBar.setFocusable(false);
-        fragmentSearchBinding.searchBar.setOnClickListener(this::startAutocompleteActivity);
-    }
-    //TODO: only for testing
-    private void testAddPage(){
-        fragmentSearchBinding.addButton.setOnClickListener(v -> {
-            addressViewModel.create(
-                    new Address(App.getUserId(), "afff", "lotus" + count++, new Date(), new Location(55, 32))).observe(requireActivity(),
-                    observer);
-        });
-
-        addressAdapter.setOnItemClickListener(position -> {
-
-
-        });
-
-
-    }
-    private void setupViewModel() {
+    /**
+     * Initialize the view model and attached it to the lifecycle of the current fragment
+     *
+     */
+    private void initViewModel() {
         addressViewModel = new ViewModelProvider(requireActivity()).get(AddressViewModel.class);
     }
 
+    /**
+     * Setup the Welcome header with the current active user
+     *
+     */
     private void setWelcomeHeader() {
         fragmentSearchBinding.welcomeText.setText(String.format("Hello %s !", App.getUserId()));
     }
+
+    /**
+     * setup the search bar which open an new intent for search address
+     *
+     */
+    private void setupSearchBar() {
+        fragmentSearchBinding.searchBar.setFocusable(false);
+        fragmentSearchBinding.searchBar.setOnClickListener(this::startAutocompleteActivity);
+    }
+
     public void startAutocompleteActivity(View view) {
         Intent intent = new Autocomplete.IntentBuilder(
                 AutocompleteActivityMode.OVERLAY,
@@ -208,12 +222,10 @@ public class FragmentSearch extends Fragment {
                     cityName = addresses.get(0).getLocality();
                 } catch (IOException e) {
                     e.printStackTrace();
-
                 }
                 addressViewModel.create(
                         new Address(App.getUserId(), place.getName(), cityName, new Date(), new Location(myLat, myLng))).observe(requireActivity(),
                         observer);
-
 
             } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
                 // TODO: Handle the error.
@@ -224,10 +236,10 @@ public class FragmentSearch extends Fragment {
             }
         }
     }
-    private void setFragmentSearchBinding(){
 
-    }
-
+    /**
+     * Setup and config the recycler view
+     */
     private void setupRecyclerView() {
         fragmentSearchBinding.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         fragmentSearchBinding.recyclerView.setHasFixedSize(true);
@@ -235,6 +247,9 @@ public class FragmentSearch extends Fragment {
         fragmentSearchBinding.recyclerView.setAdapter(addressAdapter);
     }
 
+    /**
+     * Setup the power off button which close the current user session
+     */
     private void setupPowerOffButton() {
         manager = new PreferencesManager(App.getContext());
         fragmentSearchBinding.poweroffButt.setOnClickListener(v -> AuthUI.getInstance()
@@ -244,6 +259,34 @@ public class FragmentSearch extends Fragment {
                     startActivity(new Intent(getContext(), SignInActivity.class));
                     getActivity().finish();
                 }));
+
+    }
+
+    private void setupSelectionAction() {
+        fragmentSearchBinding.imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int [] ll = new int[]{R.drawable.info, R.drawable.location, R.drawable.star, R.drawable.bin};
+                List<Integer> imagesId = Arrays.stream(ll).boxed().collect(Collectors.toList());
+                BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(imagesId, 1 ,4);
+                bottomSheetDialog.show(getChildFragmentManager(), "something");
+            }
+        });
+    }
+
+    //TODO: only for testing
+    private void testAddPage() {
+        fragmentSearchBinding.addButton.setOnClickListener(v -> {
+            addressViewModel.create(
+                    new Address(App.getUserId(), "afff", "lotus" + count++, new Date(), new Location(55, 32))).observe(requireActivity(),
+                    observer);
+        });
+
+        addressAdapter.setOnItemClickListener(position -> {
+
+
+        });
+
 
     }
 }
