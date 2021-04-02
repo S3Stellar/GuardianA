@@ -4,4 +4,6 @@
     <dimen name="newsMoreTextSize">12sp</dimen>
     <dimen name="loginViewsMargin">20dp</dimen>
 
+    <dimen name="custom_marker_size">33dp</dimen>
+    <dimen name="custom_marker_padding">2dp</dimen>
 </resources>

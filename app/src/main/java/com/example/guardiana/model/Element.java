@@ -2,6 +2,7 @@ package com.example.guardiana.model;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 
 public class Element {
 
@@ -103,5 +104,33 @@ public class Element {
 
     public void setElementAttribute(Map<String, Object> elementAttribute) {
         this.elementAttribute = elementAttribute;
+    }
+
+    @Override
+    public String toString() {
+        return "Element{" +
+                "id='" + id + '\'' +
+                ", type='" + type + '\'' +
+                ", icon='" + icon + '\'' +
+                ", name='" + name + '\'' +
+                ", active=" + active +
+                ", createdTimestamp=" + createdTimestamp +
+                ", createdBy=" + createdBy +
+                ", location=" + location +
+                ", elementAttribute=" + elementAttribute +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Element)) return false;
+        Element element = (Element) o;
+        return Objects.equals(getId(), element.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
     }
 }

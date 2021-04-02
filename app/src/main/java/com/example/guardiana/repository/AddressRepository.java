@@ -26,6 +26,7 @@ public class AddressRepository {
     private static final MutableLiveData<AddressResponse> addressesMutableLiveData = new MutableLiveData<>();
     private static AddressRepository instance;
     private static WebAddressService addressApi;
+
     private AddressRepository() { }
 
     public static synchronized AddressRepository getInstance() {
