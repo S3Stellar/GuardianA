@@ -1,6 +1,7 @@
 package com.example.guardiana.repository;
 
 import com.example.guardiana.model.Address;
+import com.example.guardiana.utility.StatusCode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,22 +14,19 @@ public class AddressResponse {
 
     public AddressResponse() {
         addressList = new ArrayList<>();
+        this.statusCode = StatusCode.OK;
     }
 
-    public AddressResponse(List<Address> addressList) {
-        this.addressList = addressList;
-    }
-
-    public AddressResponse(int statusCode) {
-        this();
+    public AddressResponse(List<Address> addressList, String message, int statusCode, int flag) {
+        this.addressList = new ArrayList<>(addressList);
+        this.message = message;
         this.statusCode = statusCode;
+        this.flag = flag;
     }
 
-    public AddressResponse(List<Address> addressList, int statusCode, String message, int flag) {
-        this.addressList = addressList;
+    public AddressResponse(int statusCode, String message){
         this.statusCode = statusCode;
         this.message = message;
-        this.flag = flag;
     }
 
     public List<Address> getAddressList() {
