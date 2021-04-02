@@ -12,7 +12,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.guardiana.model.Profile;
-import com.example.guardiana.repository.ProfileFirebaseRepository;
+import com.example.guardiana.repository.firbase.ProfileFirebaseRepository;
 import com.firebase.ui.auth.AuthMethodPickerLayout;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;

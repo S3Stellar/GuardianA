@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -20,11 +19,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.guardiana.App;
 import com.example.guardiana.PreferencesManager;
-import com.example.guardiana.R;
 import com.example.guardiana.SignInActivity;
 import com.example.guardiana.adapters.AddressAdapter;
+import com.example.guardiana.customViews.concretecustomviews.bottommenu.BottomMenuService;
+import com.example.guardiana.customViews.resources.BottomSheetAddressMenuResource;
+import com.example.guardiana.customViews.resources.BottomSheetFavoriteResource;
 import com.example.guardiana.databinding.FragmentSearchBinding;
-import com.example.guardiana.dialogs.BottomSheetDialog;
+import com.example.guardiana.dialogs.BottomSheetMenuDialog;
 import com.example.guardiana.model.Address;
 import com.example.guardiana.model.Location;
 import com.example.guardiana.repository.AddressResponse;
@@ -41,13 +42,11 @@ import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
@@ -64,10 +63,10 @@ public class FragmentSearch extends Fragment {
     private PreferencesManager manager;
     private final int PAGE_SIZE = 3;
     private int currentPage = 0, offset = 0;
-    private static int count = 71;
+    private static int count = 0;
     private Runnable scrollRunnable;
     private Observer<AddressResponse> observer;
-
+    private LinearLayoutManager layoutManager;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -102,15 +101,14 @@ public class FragmentSearch extends Fragment {
 
     /**
      * Initialize the first page address and observes to changes
-     *
      */
     private void initAddressPage() {
-        addressViewModel.getAllAddresses(App.getUserId(), currentPage, PAGE_SIZE, offset).observe(requireActivity(), observer);
+        Log.i(TAG, "initAddressPage: " + App.getUserId());
+        addressViewModel.getAllAddressesByPriority(App.getUserId(), currentPage, PAGE_SIZE, offset, "0").observe(requireActivity(), observer);
     }
 
     /**
      * Initialize the scroll listener which return the next available page
-     *
      */
     private void initScrollListener() {
         fragmentSearchBinding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -120,7 +118,7 @@ public class FragmentSearch extends Fragment {
                 if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
                     currentPage = addressAdapter.getCurrentList().size() / PAGE_SIZE;
                     offset = addressAdapter.getCurrentList().size() % PAGE_SIZE; // num of addresses to delete from end
-                    addressViewModel.getAllAddresses(App.getUserId(), currentPage, PAGE_SIZE, offset).observe(requireActivity(), observer);
+                    addressViewModel.getAllAddressesByPriority(App.getUserId(), currentPage, PAGE_SIZE, offset, "0").observe(requireActivity(), observer);
                 }
             }
         });
@@ -129,7 +127,6 @@ public class FragmentSearch extends Fragment {
 
     /**
      * Setup swipe listener which triggered when the user swipe a cell and remove the item from the list
-     *
      */
     private void setupRemoveAddress() {
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
@@ -157,8 +154,10 @@ public class FragmentSearch extends Fragment {
     private Observer<AddressResponse> setObserver() {
         return (response) -> {
             fragmentSearchBinding.recyclerView.getRecycledViewPool().clear();
-            if (response.getStatusCode() == StatusCode.OK) {
-                scrollRunnable = response.getFlag() == 0 ? null : () -> fragmentSearchBinding.recyclerView.smoothScrollToPosition(0);
+            if (String.valueOf(response.getStatusCode()).matches("20[0-9]")) {
+                Log.i(TAG, "setObserver: ");
+//                layoutManager.scrollToPositionWithOffset(0,0);
+                scrollRunnable = response.getFlag() == 0 ? null : () ->layoutManager.scrollToPositionWithOffset(0,0); /*fragmentSearchBinding.recyclerView.smoothScrollToPosition(0);*/
                 addressAdapter.submitList(response.getAddressList(), scrollRunnable);
             } else {
                 new SweetAlertDialog(getContext()).setTitleText("Error").setContentText(response.getMessage()).show();
@@ -168,7 +167,6 @@ public class FragmentSearch extends Fragment {
 
     /**
      * Initialize the view model and attached it to the lifecycle of the current fragment
-     *
      */
     private void initViewModel() {
         addressViewModel = new ViewModelProvider(requireActivity()).get(AddressViewModel.class);
@@ -176,7 +174,6 @@ public class FragmentSearch extends Fragment {
 
     /**
      * Setup the Welcome header with the current active user
-     *
      */
     private void setWelcomeHeader() {
         fragmentSearchBinding.welcomeText.setText(String.format("Hello %s !", App.getUserId()));
@@ -184,7 +181,6 @@ public class FragmentSearch extends Fragment {
 
     /**
      * setup the search bar which open an new intent for search address
-     *
      */
     private void setupSearchBar() {
         fragmentSearchBinding.searchBar.setFocusable(false);
@@ -224,7 +220,7 @@ public class FragmentSearch extends Fragment {
                     e.printStackTrace();
                 }
                 addressViewModel.create(
-                        new Address(App.getUserId(), place.getName(), cityName, new Date(), new Location(myLat, myLng))).observe(requireActivity(),
+                        new Address(App.getUserId(), place.getName(), cityName, new Date(), new Location(myLat, myLng), 0)).observe(requireActivity(),
                         observer);
 
             } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
@@ -241,7 +237,7 @@ public class FragmentSearch extends Fragment {
      * Setup and config the recycler view
      */
     private void setupRecyclerView() {
-        fragmentSearchBinding.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        fragmentSearchBinding.recyclerView.setLayoutManager(layoutManager = new LinearLayoutManager(getContext()));
         fragmentSearchBinding.recyclerView.setHasFixedSize(true);
         addressAdapter = new AddressAdapter();
         fragmentSearchBinding.recyclerView.setAdapter(addressAdapter);
@@ -257,6 +253,7 @@ public class FragmentSearch extends Fragment {
                 .addOnCompleteListener(task -> {
                     manager.setLoggedIn(false);
                     startActivity(new Intent(getContext(), SignInActivity.class));
+                    Log.i(TAG, "setupPowerOffButton: " + getActivity());
                     getActivity().finish();
                 }));
 
@@ -266,10 +263,7 @@ public class FragmentSearch extends Fragment {
         fragmentSearchBinding.imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int [] ll = new int[]{R.drawable.info, R.drawable.location, R.drawable.star, R.drawable.bin};
-                List<Integer> imagesId = Arrays.stream(ll).boxed().collect(Collectors.toList());
-                BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(imagesId, 1 ,4);
-                bottomSheetDialog.show(getChildFragmentManager(), "something");
+
             }
         });
     }
@@ -278,15 +272,55 @@ public class FragmentSearch extends Fragment {
     private void testAddPage() {
         fragmentSearchBinding.addButton.setOnClickListener(v -> {
             addressViewModel.create(
-                    new Address(App.getUserId(), "afff", "lotus" + count++, new Date(), new Location(55, 32))).observe(requireActivity(),
+                    new Address(App.getUserId(), "address " + count, "lotus" + count++, new Date(), new Location(55, 32), 7)).observe(requireActivity(),
                     observer);
         });
 
         addressAdapter.setOnItemClickListener(position -> {
+            BottomSheetMenuDialog bottomSheetDialog = new BottomSheetMenuDialog
+                    .Builder()
+                    .setHeader(addressAdapter.getCurrentList().get(position).getCityName())
+                    .setNumberRows(1)
+                    .setNumberCols(4)
+                    .setResources(new BottomSheetAddressMenuResource(getActivity()))
+                    .build();
+
+            bottomSheetDialog.show(getParentFragmentManager(), "bottomSheetDialog");
+            bottomSheetDialog.setOnCustomViewClickEvent((pos) -> {
+
+                if (pos == 0) {
+                    addressViewModel.delete(addressAdapter.getAddressPositionAt(position)).observe(requireActivity(), observer);
+                    bottomSheetDialog.dismiss();
+                }
+                if (pos == 1) {
+                    BottomMenuService b = new BottomMenuService(getActivity());
+
+                    //new FragmentSearchLogic(getActivity()).sendLocation(addressAdapter.getCurrentList().get(position).getLocation());
+                }
+                if (pos == 2) {
+                    bottomSheetDialog.dismiss();
+                    BottomSheetMenuDialog favSheetDialog = new BottomSheetMenuDialog
+                            .Builder()
+                            .setHeader(addressAdapter.getCurrentList().get(position).getCityName())
+                            .setNumberRows(2)
+                            .setNumberCols(4)
+                            .setResources(new BottomSheetFavoriteResource(getActivity()))
+                            .build();
 
 
+                    favSheetDialog.setOnCustomViewClickEvent(priority -> {
+                        // Create copy the current address
+                        Address update = new Address(addressAdapter.getCurrentList().get(position));
+                        update.setPriority(priority);
+                        addressViewModel.updateAddress(update, update.getId()).observe(requireActivity(), observer);
+                        favSheetDialog.dismiss();
+
+                    });
+                    favSheetDialog.show(getParentFragmentManager(), "favSheetDialog");
+                    ;
+                }
+            });
         });
-
-
     }
+
 }

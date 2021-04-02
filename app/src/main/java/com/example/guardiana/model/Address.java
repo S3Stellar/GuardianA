@@ -11,26 +11,32 @@ public class Address {
     private String cityName;
     private Date createdTimestamp;
     private Location location;
+    private int priority;
 
     public Address() {
 
     }
 
-    public Address(String id, String user, String cityAddress, String cityName, Date createdTimestamp, Location location) {
+    public Address(String id, String user, String cityAddress, String cityName, Date createdTimestamp, Location location, int priority) {
         this.id = id;
         this.user = user;
         this.cityAddress = cityAddress;
         this.cityName = cityName;
         this.createdTimestamp = createdTimestamp;
         this.location = location;
+        this.priority = priority;
+    }
+    public Address(Address address){
+        this(address.id, address.user, address.cityAddress, address.cityName, address.createdTimestamp, address.location, address.priority);
     }
 
-    public Address(String user, String cityAddress, String cityName, Date createdTimestamp, Location location) {
+    public Address(String user, String cityAddress, String cityName, Date createdTimestamp, Location location, int priority) {
         this.user = user;
         this.cityAddress = cityAddress;
         this.cityName = cityName;
         this.createdTimestamp = createdTimestamp;
         this.location = location;
+        this.priority = priority;
     }
 
     public Location getLocation() {
@@ -82,41 +88,33 @@ public class Address {
         this.cityAddress = cityAddress;
     }
 
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Address address = (Address) o;
-        return Objects.equals(id, address.id) &&
-                Objects.equals(user, address.user) &&
-                Objects.equals(cityAddress, address.cityAddress) &&
-                Objects.equals(cityName, address.cityName) &&
-                Objects.equals(createdTimestamp, address.createdTimestamp) &&
-                Objects.equals(location, address.location);
+        return Objects.equals(id, address.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, user, cityAddress, cityName, createdTimestamp, location);
+        return Objects.hash(id);
     }
 
-//    @Override
-//    public String toString() {
-//        return "Address{" +
-//                "id='" + id + '\'' +
-//                ", user='" + user + '\'' +
-//                ", cityAddress='" + cityAddress + '\'' +
-//                ", cityName='" + cityName + '\'' +
-//                ", createdTimestamp=" + createdTimestamp +
-//                ", location=" + location +
-//                '}';
-//    }
-@Override
-public String toString() {
-    return "Address{" +
-            "id='" + id + '\'' +
-            ", cityName='" + cityName + '\'' +
-           '}';
-}
+    @Override
+    public String toString() {
+        return "Address{" +
+                "id='" + id + '\'' +
+                ", cityAddress='" + cityAddress + '\'' +
+                ", priority=" + priority +
+                '}';
+    }
 }
