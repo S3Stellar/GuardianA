@@ -19,9 +19,9 @@ public class BottomSheetAddressMenuResource extends AbstractBottomSheetResource 
     @Override
     public void createCustomList() {
         getResources().addAll(Arrays.asList(
-                new CustomRemoveView(getContext(), R.drawable.bin, "Remove"),
-                new CustomSendLocationView(getContext(), R.drawable.location, "Send Location"),
-                new CustomFavoriteView(getContext(), R.drawable.star, "Favorite"),
-                new CustomDriveView(getContext(), R.drawable.other, "Drive")));
+                new CustomRemoveView(getContext(), R.drawable.bottom_sheet_bin, "Remove"),
+                new CustomSendLocationView(getContext(), R.drawable.bottom_sheet_location, "Send Location"),
+                new CustomFavoriteView(getContext(), R.drawable.bottom_sheet_star, "Favorite"),
+                new CustomDriveView(getContext(), R.drawable.bottom_sheet_bicycle, "Drive")));
     }
 }

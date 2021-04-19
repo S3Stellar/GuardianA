@@ -2,9 +2,9 @@ package com.example.guardiana.customViews.concretecustomviews.bottommenu;
 
 import android.content.Context;
 
-import com.example.guardiana.customViews.AbstractCustomBottomSheetView;
+import com.example.guardiana.customViews.AbstractBaseView;
 
-public class CustomSendLocationView extends AbstractCustomBottomSheetView{
+public class CustomSendLocationView extends AbstractBaseView {
 
 
     public CustomSendLocationView(Context context){

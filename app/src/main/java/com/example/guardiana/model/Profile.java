@@ -1,17 +1,39 @@
 package com.example.guardiana.model;
 
-import java.util.Date;
+import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
 
+import java.util.Date;
+import java.util.Objects;
+
+@Entity(tableName = "profile_table")
 public class Profile {
+    @PrimaryKey
+    @NonNull
     private String email;
+
+    @ColumnInfo(name = "name")
     private String name;
+
+    @ColumnInfo(name = "phone")
     private String phoneNumber;
+
+    @ColumnInfo(name = "icon")
     private int icon;
+
     private Date creationDate;
 
     public Profile() {
     }
 
+    public Profile(Profile other) {
+        this(other.email, other.name, other.phoneNumber, other.icon, other.creationDate);
+    }
+    @Ignore
     public Profile(String email, String name, String phoneNumber, int icon, Date creationDate) {
         this.email = email;
         this.name = name;
@@ -20,12 +42,14 @@ public class Profile {
         this.creationDate = creationDate;
     }
 
+    @Ignore
     public Profile(String phoneNumber, int icon, Date creationDate) {
         this.phoneNumber = phoneNumber;
         this.icon = icon;
         this.creationDate = creationDate;
     }
 
+    @Ignore
     public Profile(String email, String name, int icon, Date creationDate) {
         this.email = email;
         this.name = name;
@@ -71,6 +95,23 @@ public class Profile {
 
     public void setIcon(int icon) {
         this.icon = icon;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Profile profile = (Profile) o;
+        return icon == profile.icon &&
+                email.equals(profile.email) &&
+                Objects.equals(name, profile.name) &&
+                Objects.equals(phoneNumber, profile.phoneNumber) &&
+                Objects.equals(creationDate, profile.creationDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(email, name, phoneNumber, icon, creationDate);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.example.guardiana.adapters;
 
-public class FavoriteOptions {
+public final class FavoriteOptions {
     public static final int HOME = 0;
     public static final int WORK = 1;
     public static final int FRIENDS = 2;
