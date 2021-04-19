@@ -78,6 +78,9 @@ public class FragmentSearch extends Fragment {
         // Bind the view to the fragment
         fragmentSearchBinding = FragmentSearchBinding.inflate(getLayoutInflater(), container, false);
 
+        // Setup and initialize the view model to the current fragment
+        initViewModel();
+
         // Setup views
         setupRecyclerView();
         setupPowerOffButton();
@@ -87,8 +90,7 @@ public class FragmentSearch extends Fragment {
         setTopImageView();
         setBottomDialogOptions();
 
-        // Setup and initialize the view model to the current fragment
-        initViewModel();
+
 
         // Set observer
         addressResponseObserver = addressResponseObserver();
@@ -181,24 +183,9 @@ public class FragmentSearch extends Fragment {
      * Setup the Welcome header with the current active user
      */
     private void setWelcomeHeader() {
-        fragmentSearchBinding.welcomeText.setText(showDayMessage());
+        fragmentSearchBinding.welcomeText.setText(addressViewModel.showDayMessage());
     }
 
-    private String showDayMessage() {
-        Calendar c = Calendar.getInstance();
-        int timeOfDay = c.get(Calendar.HOUR_OF_DAY);
-        String message = "";
-        if (timeOfDay < 12) {
-            message = "Good Morning";
-        } else if (timeOfDay < 16) {
-            message = "Good Afternoon";
-        } else if (timeOfDay < 21) {
-            message = "Good Evening";
-        } else {
-            message = "Good Night";
-        }
-        return message;
-    }
 
     /**
      * setup the search bar which open an new intent for search address
