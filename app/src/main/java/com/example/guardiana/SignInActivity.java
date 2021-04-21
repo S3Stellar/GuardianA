@@ -11,7 +11,13 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.lifecycle.Observer;
+
+import com.example.guardiana.model.Location;
 import com.example.guardiana.model.Profile;
+import com.example.guardiana.model.UserMarker;
+import com.example.guardiana.repository.UserMarkerRepository;
+import com.example.guardiana.repository.UserMarkerResponse;
 import com.example.guardiana.repository.firbase.ProfileFirebaseRepository;
 import com.firebase.ui.auth.AuthMethodPickerLayout;
 import com.firebase.ui.auth.AuthUI;
@@ -45,6 +51,7 @@ public class SignInActivity extends Activity {
     private FirebaseAuth mAuth;
     private long pressTime = 0;
     private ProfileFirebaseRepository profileFirebaseRepository;
+    private UserMarkerRepository userMarkerRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +61,8 @@ public class SignInActivity extends Activity {
         email = findViewById(R.id.editTextEmail);
         password = findViewById(R.id.editTextPassword);
         mAuth = FirebaseAuth.getInstance();
+        userMarkerRepository = UserMarkerRepository.getInstance();
+
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.googleWebClientLogin))
                 .requestEmail()
@@ -139,12 +148,59 @@ public class SignInActivity extends Activity {
                 SIGNUP_CODE);
     }
 
+
+    /*@Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Phone butt / +Plus butt / Register Now
+
+        if (requestCode == PHONE_LOGIN_CODE ) {
+            IdpResponse response = IdpResponse.fromResultIntent(data);
+            if (resultCode == RESULT_OK) {
+                // Successfully signed in
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                userMarkerRepository.update(user.getEmail(),
+                        new UserMarker(user.getEmail(), new Location(0,0), true, true, 0)).
+                        observe(, new Observer<UserMarkerResponse>() {
+                            @Override
+                            public void onChanged(UserMarkerResponse userMarkerResponse) {
+
+                            }
+                        });
+                profileFirebaseRepository = ProfileFirebaseRepository.getInstance();
+                checkNewUserAndSave(response, user);
+                // ...
+            } else {
+                manager.setLoggedIn(false);
+                // Sign in failed. If response is null the user canceled the
+                // sign-in flow using the back button. Otherwise check
+                // response.getError().getErrorCode() and handle the error.
+            }
+        }
+
+        // Google butt result
+        if (requestCode == GGO_SIGNIN_CODE) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            try {
+                // Google Sign In was successful, authenticate with Firebase
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                firebaseAuthWithGoogle(account.getIdToken());
+            } catch (ApiException e) {
+                // Google Sign In failed, update UI appropriately
+                manager.setLoggedIn(false);
+            }
+        }
+    }*/
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         // Phone butt / +Plus butt / Register Now
+
         if (requestCode == PHONE_LOGIN_CODE || requestCode == SIGNUP_CODE) {
+            
             IdpResponse response = IdpResponse.fromResultIntent(data);
             if (resultCode == RESULT_OK) {
                 // Successfully signed in

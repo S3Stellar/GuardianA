@@ -109,8 +109,8 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
     private void setObserver() {
         observer = response -> {
             if (response.getStatusCode() == 200) {
+                // Load elements flag
                 if (response.getFlag() == 0) {
-
                     Set<Element> oldElements = new HashSet<>(displayedElements);
                     displayedElements.addAll(response.getElementList());
                     displayedElements.removeAll(oldElements);
@@ -256,6 +256,9 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
 
                         lastKnownLocation.setLongitude(locationResult.getLastLocation().getLongitude());
                         lastKnownLocation.setLatitude(locationResult.getLastLocation().getLatitude());
+
+                        // Send to server my updated location
+                        // Request new locations of other users to update map
 
                     }
                 };
