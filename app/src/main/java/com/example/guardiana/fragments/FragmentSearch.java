@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.guardiana.App;
+import com.example.guardiana.HomeActivity;
 import com.example.guardiana.PreferencesManager;
 import com.example.guardiana.R;
 import com.example.guardiana.SignInActivity;
@@ -317,6 +318,15 @@ public class FragmentSearch extends Fragment {
                         favSheetDialog.show(getParentFragmentManager(), "favSheetDialog");
                         break;
                     case DialogOptions.BottomDialog.DRIVE:
+                        bottomSheetDialog.dismiss();
+                        Bundle bundle = new Bundle();
+                        bundle.putSerializable("location", addressAdapter.getCurrentList().get(position).getLocation());
+                        Fragment fragment_road = getActivity().getSupportFragmentManager().findFragmentByTag("frag_road");
+                        fragment_road.setArguments(bundle);
+                        Fragment fragment_search = getActivity().getSupportFragmentManager().findFragmentByTag("frag_search");
+                        getActivity().getSupportFragmentManager().beginTransaction().hide(fragment_search)
+                                .show(fragment_road).commit();
+                        ((HomeActivity)getActivity()).getChipNavigationBar().setItemSelected(R.id.bottom_nav_map, true);
                         break;
                 }
             });

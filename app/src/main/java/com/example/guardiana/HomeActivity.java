@@ -33,8 +33,8 @@ public class HomeActivity extends AppCompatActivity {
 
     private void addFragments() {
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.fragment_container, fragmentRoad)
-                .add(R.id.fragment_container, fragmentSearch)
+                .add(R.id.fragment_container, fragmentRoad, "frag_road")
+                .add(R.id.fragment_container, fragmentSearch, "frag_search")
                 .hide(fragmentRoad)
                 .show(fragmentSearch).commit();
     }
@@ -60,5 +60,9 @@ public class HomeActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+    }
+
+    public ChipNavigationBar getChipNavigationBar() {
+        return chipNavigationBar;
     }
 }
