@@ -14,7 +14,6 @@ public class AddressResponse {
 
     public AddressResponse() {
         addressList = new ArrayList<>();
-        this.statusCode = StatusCode.OK;
     }
 
     public AddressResponse(List<Address> addressList, String message, int statusCode, int flag) {

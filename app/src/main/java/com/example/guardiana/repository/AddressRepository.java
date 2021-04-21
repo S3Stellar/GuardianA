@@ -5,7 +5,6 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.guardiana.App;
 import com.example.guardiana.model.Address;
 import com.example.guardiana.services.WebAddressService;
 import com.example.guardiana.utility.StatusCode;
@@ -56,7 +55,7 @@ public class AddressRepository {
      * @return MutableLiveData<AddressResponse>
      */
     public MutableLiveData<AddressResponse> getAllAddresses(String userId, String type, String value, String sortBy, String sortOrder, int page, int size, int offset) {
-        addressApi.getAddressesByEmail(userId, type, value, sortBy, sortOrder, page, size).enqueue(new Callback<Address[]>() {
+        addressApi.getAllAddresses(userId, type, value, sortBy, sortOrder, page, size).enqueue(new Callback<Address[]>() {
             @Override
             public void onResponse(@NotNull Call<Address[]> call, @NotNull Response<Address[]> response) {
                 if (response.body() != null && response.body().length > 0) {
@@ -88,19 +87,12 @@ public class AddressRepository {
         return addressesMutableLiveData;
     }
 
-    /**
-     * Overloaded getAllAddresses with default values
-     */
-    public MutableLiveData<AddressResponse> getAllAddresses(String userId, int page, int size, int offset) {
-        return getAllAddresses(userId, "byPriority", "", "", "", page, size, offset);
-    }
-
 
     /**
      * getAllAddresses by priority
      */
-    public MutableLiveData<AddressResponse> getAllAddressesByPriority(String userId, int page, int size, int offset, String priority) {
-        return getAllAddresses(userId, "byPriority", priority, "", "", page, size, offset);
+    public MutableLiveData<AddressResponse> getAllAddressesByPriority(String userId, String type, String value, String sortBy, String sortOrder, int page, int size, int offset) {
+        return getAllAddresses(userId, type, value, sortBy,sortOrder, page, size, offset);
     }
 
     /**
@@ -186,26 +178,23 @@ public class AddressRepository {
      * @param address
      * @return MutableLiveData<AddressResponse>
      */
-    // 1 1 1 2 7 7 7 7
-    // 0 1 2 3 4 5 6 7 8
     public MutableLiveData<AddressResponse> updateAddress(Address address, String addressId) {
         addressApi.updateAddress(address, addressId).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
-
                 List<Address> currList = new ArrayList<>(addressesMutableLiveData.getValue().getAddressList());
                 currList.remove(address);
-                int i;
-                for (i = 0; i < currList.size(); i++) {
-                    if (address.getPriority() <= currList.get(i).getPriority()) {
-                        currList.add(i, address);
+                int currIndex;
+                for (currIndex = 0; currIndex < currList.size(); currIndex++) {
+                    if (address.getPriority() <= currList.get(currIndex).getPriority()) {
+                        currList.add(currIndex, address);
                         break;
                     }
                 }
 
                 // Edge case where there is no element in the list which has priority less than current priority
                 // Example update an item to 7 priority and all the list has priority which is less then the updated priority
-                if(i == currList.size()){
+                if(currIndex == currList.size()){
                     currList.add(address);
                 }
                 AddressResponse addressResponse = new AddressResponse(currList, response.message(), response.code(), 1);

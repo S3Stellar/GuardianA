@@ -1,8 +1,6 @@
 package com.example.guardiana.adapters;
 
-import android.animation.TypeEvaluator;
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,11 +15,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.guardiana.R;
 import com.example.guardiana.model.Address;
-
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 
 public class AddressAdapter extends ListAdapter<Address, AddressAdapter.AddressViewHolder> {
 
@@ -97,25 +90,25 @@ public class AddressAdapter extends ListAdapter<Address, AddressAdapter.AddressV
         switch(priority) {
 
             case FavoriteOptions.HOME:
-                image = R.drawable.house;
+                image = R.drawable.bottom_sheet_home;
                 break;
             case FavoriteOptions.WORK:
-                image = R.drawable.work;
+                image = R.drawable.bottom_sheet_work;
                 break;
             case FavoriteOptions.FRIENDS:
-                image = R.drawable.friends;
+                image = R.drawable.bottom_sheet_friends;
                 break;
             case FavoriteOptions.KINDERGARTEN:
-                image = R.drawable.kindergarten;
+                image = R.drawable.bottom_sheet_kindergarten;
                 break;
             case FavoriteOptions.SHOP:
-                image = R.drawable.shops;
+                image = R.drawable.bottom_sheet_shops;
                 break;
             case FavoriteOptions.CLINIC:
-                image = R.drawable.clinic;
+                image = R.drawable.bottom_sheet_clinic;
                 break;
             case FavoriteOptions.HOSPITAL:
-                image = R.drawable.hospital;
+                image = R.drawable.bottom_sheet_hospital;
                 break;
             default:
                 image = R.drawable.ic_baseline_directions_bike_24;

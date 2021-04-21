@@ -1,4 +1,4 @@
-package com.example.guardiana.repository.firbase;
+package com.example.guardiana.repository.firebase;
 
 
 import com.example.guardiana.listeners.OnDataCompleteListener;

@@ -1,6 +1,7 @@
 package com.example.guardiana.viewmodel;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 
 import androidx.annotation.NonNull;
@@ -9,16 +10,22 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.guardiana.customViews.resources.BottomSheetAddressMenuResource;
+import com.example.guardiana.dialogs.BottomSheetMenuDialog;
 import com.example.guardiana.model.Address;
 import com.example.guardiana.model.Location;
 import com.example.guardiana.repository.AddressRepository;
 import com.example.guardiana.repository.AddressResponse;
+import com.example.guardiana.services.AddressOptions;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+
+import java.util.Calendar;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class AddressViewModel extends AndroidViewModel {
+public class AddressViewModel extends AndroidViewModel{
 
     private final AddressRepository addressRepository;
 
@@ -28,21 +35,12 @@ public class AddressViewModel extends AndroidViewModel {
         addressRepository.initMutableLiveData();
     }
 
-//    public AddressViewModel() {
-//        addressRepository = AddressRepository.getInstance();
-//        addressRepository.initMutableLiveData();
-//    }
-
     public LiveData<AddressResponse> create(Address address) {
         return addressRepository.create(address);
     }
 
-    public LiveData<AddressResponse> getAllAddresses(String userId, String type, String value, String sortBy, String sortOrder, int page, int size, int offset) {
-        return addressRepository.getAllAddresses(userId, type, value, sortBy, sortOrder, page, size, offset);
-    }
-
     public MutableLiveData<AddressResponse> getAllAddressesByPriority(String userId, int page, int size, int offset, String priority) {
-        return addressRepository.getAllAddresses(userId, "byPriority", priority, "", "", page, size, offset);
+        return addressRepository.getAllAddressesByPriority(userId, AddressOptions.byPriority.name(), priority, "", "", page, size, offset);
     }
 
     public LiveData<AddressResponse> updateAddress(Address address, String addressId) {
@@ -53,6 +51,29 @@ public class AddressViewModel extends AndroidViewModel {
         return addressRepository.delete(address);
     }
 
+    public String showDayMessage() {
+        Calendar c = Calendar.getInstance();
+        int timeOfDay = c.get(Calendar.HOUR_OF_DAY);
+        String message = "";
+        if (timeOfDay < 12) {
+            message = "Good Morning";
+        } else if (timeOfDay < 16) {
+            message = "Good Afternoon";
+        } else if (timeOfDay < 21) {
+            message = "Good Evening";
+        } else {
+            message = "Good Night";
+        }
+        return message;
+    }
 
-
+    public void sendLocation(Context context, Location location) {
+        String uri = "http://maps.google.com/maps?saddr=" +location.getLat() + "," + location.getLng();
+        Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+        sharingIntent.setType("text/plain");
+        String ShareSub = "Here is my location";
+        sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, ShareSub);
+        sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, uri);
+        context.startActivity(Intent.createChooser(sharingIntent, "Share via"));
+    }
 }

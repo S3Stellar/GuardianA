@@ -12,7 +12,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 
 import com.example.guardiana.R;
-import com.example.guardiana.customViews.AbstractCustomBottomSheetView;
+import com.example.guardiana.customViews.AbstractBaseView;
 import com.example.guardiana.customViews.resources.AbstractBottomSheetResource;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
@@ -124,8 +124,8 @@ public class BottomSheetMenuDialog extends BottomSheetDialogFragment {
     }
 
     /* Create new view to the inflated bottom view */
-    private AbstractCustomBottomSheetView createBottomSheetImageView(int i, int j) {
-        AbstractCustomBottomSheetView customView = resources.getResources().get(i * idArray[0].length + j);
+    private AbstractBaseView createBottomSheetImageView(int i, int j) {
+        AbstractBaseView customView = resources.getResources().get(i * idArray[0].length + j);
         idArray[i][j] = customView.getId();
         mapId.put(customView.getId(), i * idArray[0].length + j);
         customView.setOnClickListener(v -> {

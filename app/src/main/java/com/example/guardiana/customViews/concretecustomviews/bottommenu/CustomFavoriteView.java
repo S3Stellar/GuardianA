@@ -2,9 +2,9 @@ package com.example.guardiana.customViews.concretecustomviews.bottommenu;
 
 import android.content.Context;
 
-import com.example.guardiana.customViews.AbstractCustomBottomSheetView;
+import com.example.guardiana.customViews.AbstractBaseView;
 
-public class CustomFavoriteView extends AbstractCustomBottomSheetView {
+public class CustomFavoriteView extends AbstractBaseView {
 
     public CustomFavoriteView(Context context) {
         super(context);
