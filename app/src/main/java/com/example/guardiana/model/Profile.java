@@ -1,28 +1,18 @@
 package com.example.guardiana.model;
 
-import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
-import androidx.room.Ignore;
-import androidx.room.PrimaryKey;
 
 import java.util.Date;
 import java.util.Objects;
 
-@Entity(tableName = "profile_table")
+
 public class Profile {
-    @PrimaryKey
-    @NonNull
+
     private String email;
 
-    @ColumnInfo(name = "name")
     private String name;
 
-    @ColumnInfo(name = "phone")
     private String phoneNumber;
 
-    @ColumnInfo(name = "icon")
     private int icon;
 
     private Date creationDate;
@@ -33,7 +23,7 @@ public class Profile {
     public Profile(Profile other) {
         this(other.email, other.name, other.phoneNumber, other.icon, other.creationDate);
     }
-    @Ignore
+
     public Profile(String email, String name, String phoneNumber, int icon, Date creationDate) {
         this.email = email;
         this.name = name;
@@ -42,14 +32,13 @@ public class Profile {
         this.creationDate = creationDate;
     }
 
-    @Ignore
+
     public Profile(String phoneNumber, int icon, Date creationDate) {
         this.phoneNumber = phoneNumber;
         this.icon = icon;
         this.creationDate = creationDate;
     }
 
-    @Ignore
     public Profile(String email, String name, int icon, Date creationDate) {
         this.email = email;
         this.name = name;

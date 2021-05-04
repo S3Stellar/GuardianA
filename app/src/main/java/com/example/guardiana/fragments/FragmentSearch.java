@@ -91,8 +91,6 @@ public class FragmentSearch extends Fragment {
         setTopImageView();
         setBottomDialogOptions();
 
-
-
         // Set observer
         addressResponseObserver = addressResponseObserver();
 
@@ -229,7 +227,7 @@ public class FragmentSearch extends Fragment {
                     e.printStackTrace();
                 }
                 addressViewModel.create(
-                        new Address(App.getUserId(), place.getName(), cityName, new Date(), new Location(myLat, myLng), 0)).observe(requireActivity(),
+                        new Address(App.getUserId(), place.getName(), cityName, new Date(), new Location(myLat, myLng), 7)).observe(requireActivity(),
                         addressResponseObserver);
 
             } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {

@@ -11,14 +11,9 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.lifecycle.Observer;
-
-import com.example.guardiana.model.Location;
 import com.example.guardiana.model.Profile;
-import com.example.guardiana.model.UserMarker;
 import com.example.guardiana.repository.UserMarkerRepository;
-import com.example.guardiana.repository.UserMarkerResponse;
-import com.example.guardiana.repository.firbase.ProfileFirebaseRepository;
+import com.example.guardiana.repository.firebase.ProfileFirebaseRepository;
 import com.firebase.ui.auth.AuthMethodPickerLayout;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;

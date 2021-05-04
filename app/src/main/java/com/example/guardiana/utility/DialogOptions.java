@@ -11,5 +11,8 @@ public final class DialogOptions {
         public static final int SET_PRIORITY = 2;
 
         public static final int DRIVE = 3;
+
+        public static final int LIKE = 0;
+        public static final int DISLIKE = 1;
     }
 }

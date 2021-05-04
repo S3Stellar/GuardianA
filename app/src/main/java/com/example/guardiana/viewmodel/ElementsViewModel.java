@@ -1,6 +1,9 @@
 package com.example.guardiana.viewmodel;
 
+import android.location.Location;
+
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.guardiana.model.Element;
@@ -12,6 +15,7 @@ import java.util.Map;
 public class ElementsViewModel extends ViewModel {
 
     private final ElementRepository elementRepository;
+    private MutableLiveData<Location> locationMutableLiveData = new MutableLiveData<>();
 
     public ElementsViewModel() {
         elementRepository = ElementRepository.getInstance();
@@ -38,4 +42,11 @@ public class ElementsViewModel extends ViewModel {
         return elementRepository.deleteAll();
     }
 
+    public LiveData<Location> getLocation(){
+        return locationMutableLiveData;
+    }
+
+    public void setLocation(Location location) {
+        locationMutableLiveData.postValue(location);
+    }
 }

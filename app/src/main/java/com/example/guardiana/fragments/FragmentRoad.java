@@ -2,10 +2,11 @@ package com.example.guardiana.fragments;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Looper;
-import android.sax.ElementListener;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,12 +22,19 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.guardiana.App;
+import com.example.guardiana.HomeActivity;
 import com.example.guardiana.R;
 import com.example.guardiana.clustermap.ClusterManagerRender;
 import com.example.guardiana.clustermap.ReportClusterMarker;
+import com.example.guardiana.customViews.resources.BottomSheetAddressMenuResource;
+import com.example.guardiana.customViews.resources.BottomSheetFavoriteResource;
+import com.example.guardiana.dialogs.BottomSheetMenuDialog;
+import com.example.guardiana.model.Address;
 import com.example.guardiana.model.Element;
 import com.example.guardiana.model.ElementCreator;
 import com.example.guardiana.repository.ElementResponse;
+import com.example.guardiana.utility.DialogOptions;
+import com.example.guardiana.utility.DirectionsJSONParser;
 import com.example.guardiana.viewmodel.ElementsViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -38,8 +46,13 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.VisibleRegion;
 import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.gms.tasks.Task;
@@ -47,14 +60,21 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.maps.android.clustering.ClusterManager;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
@@ -78,8 +98,8 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
     // Allows class to cancel the location request if it exits the activity.
     // Typically, you use one cancellation source per lifecycle.
     private final CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-    private double currentMapZoom;
-
+    private Polyline lastPolyLine;
+    private Marker lastMarker;
 
     @Nullable
     @Override
@@ -103,7 +123,14 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
 
         mMapView.getMapAsync(this);
 
+
         return view;
+    }
+
+    private void locationObserver() {
+        elementsViewModel.getLocation().observe(requireActivity(), location -> {
+            lastKnownLocation = location;
+        });
     }
 
     private void setObserver() {
@@ -121,7 +148,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
                         clusterManager.cluster();
                     }
                     displayedElements.addAll(oldElements);
-                } else if (response.getFlag() == 1  ) {
+                } else if (response.getFlag() == 1) {
                     Toast.makeText(getContext(), "Status 200 - create", Toast.LENGTH_SHORT).show();
                 }
             } else {
@@ -208,24 +235,6 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
         }
         googleMap.setOnMapLoadedCallback(() -> {
             googleMap.setMyLocationEnabled(true);
-           /* //To add marker
-            LocationManager locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
-            Criteria criteria = new Criteria();
-            String locationProvider = String.valueOf(locationManager.getBestProvider(criteria, true));
-            //String locationProvider = LocationManager.NETWORK_PROVIDER;
-            // I suppressed the missing-permission warning because this wouldn't be executed in my
-            // case without location services being enabled
-            Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
-            if (lastKnownLocation == null) {
-                locationManager.requestLocationUpdates(locationProvider, 1000, 0, new LocationListener() {
-                    @Override
-                    public void onLocationChanged(@NonNull Location location) {
-                        locationManager.removeUpdates(this::onLocationChanged);
-                        initializeMyLocation(location);
-                    }
-                });
-            } else
-                initializeMyLocation(lastKnownLocation);*/
             initClusterManager();
             requestCurrentLocation();
             loadElementsFromServer();
@@ -243,40 +252,70 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
             }
             googleMap.setOnCameraIdleListener(clusterManager);
             clusterManager.setRenderer(clusterManagerRender);
+
+            clusterManager.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener<ReportClusterMarker>() {
+                @Override
+                public boolean onClusterItemClick(ReportClusterMarker item) {
+                    createDialog(item);
+                    return false;
+                }
+            });
         }
+    }
+
+    private void createDialog(ReportClusterMarker item) {
+        BottomSheetMenuDialog bottomSheetDialog = new BottomSheetMenuDialog
+                .Builder()
+                .setHeader("Have you noticed it ?")
+                .setNumberRows(1)
+                .setNumberCols(2)
+                .setResources(new BottomSheetAddressMenuResource(getActivity()))
+                .build();
+
+        bottomSheetDialog.show(getParentFragmentManager(), "bottomSheetDialog");
+        bottomSheetDialog.setOnCustomViewClickEvent((pos) -> {
+            switch (pos) {
+
+                case DialogOptions.BottomDialog.LIKE:
+                    bottomSheetDialog.dismiss();
+                    break;
+
+                case DialogOptions.BottomDialog.DISLIKE:
+                    bottomSheetDialog.dismiss();
+                    break;
+            }
+        });
     }
 
     @NotNull
     private LocationCallback getLocationCallback() {
         return new LocationCallback() {
-                    @Override
-                    public void onLocationResult(@NonNull LocationResult locationResult) {
-                        super.onLocationResult(locationResult);
-                        Log.i(TAG, "onLocationResult: lng:  "  + locationResult.getLastLocation().getLongitude() + ", lat: "+ locationResult.getLastLocation().getLatitude());
+            @Override
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                super.onLocationResult(locationResult);
 
-                        lastKnownLocation.setLongitude(locationResult.getLastLocation().getLongitude());
-                        lastKnownLocation.setLatitude(locationResult.getLastLocation().getLatitude());
+                lastKnownLocation.setLongitude(locationResult.getLastLocation().getLongitude());
+                lastKnownLocation.setLatitude(locationResult.getLastLocation().getLatitude());
 
-                        // Send to server my updated location
-                        // Request new locations of other users to update map
+                // @TODO
+                // Send to server my updated location
+                // Request new locations of other users to update map
 
-                    }
-                };
+            }
+        };
     }
 
     private void requestCurrentLocation() {
-        Log.d(TAG, "requestCurrentLocation()");
         // Request permission
         if (ActivityCompat.checkSelfPermission(
                 getContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED) {
 
-            // Main code
             Task<Location> currentLocationTask = fusedLocationClient.getCurrentLocation(
                     PRIORITY_HIGH_ACCURACY,
-                    cancellationTokenSource.getToken()
-            );
+                    cancellationTokenSource.getToken());
+
             currentLocationTask.addOnCompleteListener((task -> {
                 String result = "";
                 if (task.isSuccessful()) {
@@ -287,7 +326,6 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
                             ", " +
                             location.getLongitude();
                     initializeMyLocation(location);
-
                     LocationRequest locationRequest = LocationRequest.create();
                     locationRequest.setInterval(5000);
                     locationRequest.setFastestInterval(0);
@@ -309,14 +347,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
 
     private void cameraMoveLoadElementsListener() {
         googleMap.setOnCameraIdleListener(() -> {
-            Log.i("MOVE", "CAMERA MOVE!");
             loadElementsFromServer();
-        });
-
-        googleMap.setOnCameraMoveListener(() -> {
-            CameraPosition cameraPosition = googleMap.getCameraPosition();
-            currentMapZoom = cameraPosition.zoom;
-            Log.i(TAG, "onCameraMove: " + currentMapZoom);
         });
     }
 
@@ -350,5 +381,201 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
 
         // @TODO Calculate size ratio of elements per map size (zoom)
         elementsViewModel.getAllElementsByLocationFilters(attrMap, "", "", 0, 20).observe(requireActivity(), observer);
+    }
+
+    // Method called when Drive button is clicked and route has to be shown
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (hidden) {
+            //do when hidden
+        } else {
+            Bundle bundle = getArguments();
+            Log.i("TAG", "onStart: " + bundle);
+            if (bundle != null && !bundle.isEmpty()) {
+                if (ActivityCompat.checkSelfPermission(
+                        getContext(),
+                        Manifest.permission.ACCESS_FINE_LOCATION) ==
+                        PackageManager.PERMISSION_GRANTED) {
+
+                    Task<Location> currentLocationTask = fusedLocationClient.getCurrentLocation(
+                            PRIORITY_HIGH_ACCURACY,
+                            cancellationTokenSource.getToken());
+
+                    currentLocationTask.addOnCompleteListener((task -> {
+                        String result;
+                        if (task.isSuccessful()) {
+                            // Task completed successfully
+                            Location location = task.getResult();
+                            result = "Location (success): " +
+                                    location.getLatitude() +
+                                    ", " +
+                                    location.getLongitude();
+                            com.example.guardiana.model.Location endLocation = ((com.example.guardiana.model.Location) bundle.getSerializable("location"));
+                            // Getting URL to the Google Directions API
+                            String url = getDirectionsUrl(new LatLng(endLocation.getLat(), endLocation.getLng()), new LatLng(location.getLatitude(), location.getLongitude()));
+
+                            // Start downloading json data from Google Directions API
+                            new DownloadTask().execute(url);
+
+                            if(lastMarker != null)
+                                lastMarker.remove();
+
+                            lastMarker = googleMap.addMarker(new MarkerOptions()
+                                    .position(new LatLng(endLocation.getLat(), endLocation.getLng()))
+                                    .title("Destination")
+                                    .icon(BitmapDescriptorFactory
+                                            .fromResource(R.drawable.flag)));
+
+                        } else {
+                            // Task failed with an exception
+                            Exception exception = task.getException();
+                            result = "Exception thrown: " + exception;
+                        }
+                        Log.d(TAG, "getCurrentLocation() result: " + result);
+                    }));
+                } else {
+                    // TODO: Request fine location permission
+                    Log.d(TAG, "Request fine location permission.");
+                }
+            }
+        }
+    }
+
+    private class DownloadTask extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... url) {
+            String data = "";
+            try {
+                data = downloadUrl(url[0]);
+            } catch (Exception e) {
+                Log.d("Background Task", e.toString());
+            }
+            return data;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            ParserTask parserTask = new ParserTask();
+            parserTask.execute(result);
+        }
+    }
+
+
+    /**
+     * A class to parse the Google Places in JSON format
+     */
+    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
+        // Parsing the data in non-ui thread
+        @Override
+        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
+
+            JSONObject jObject;
+            List<List<HashMap<String, String>>> routes = null;
+
+            try {
+                jObject = new JSONObject(jsonData[0]);
+                DirectionsJSONParser parser = new DirectionsJSONParser();
+
+                routes = parser.parse(jObject);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return routes;
+        }
+
+        @Override
+        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
+            ArrayList points = null;
+            PolylineOptions lineOptions = new PolylineOptions();
+
+            // Remove last drawn polyline (route)
+            if(lastPolyLine != null)
+                lastPolyLine.remove();
+
+            for (int i = 0; i < result.size(); i++) {
+                points = new ArrayList();
+                lineOptions = new PolylineOptions();
+
+                List<HashMap<String, String>> path = result.get(i);
+
+                for (int j = 0; j < path.size(); j++) {
+                    HashMap<String, String> point = path.get(j);
+
+                    double lat = Double.parseDouble(point.get("lat"));
+                    double lng = Double.parseDouble(point.get("lng"));
+                    LatLng position = new LatLng(lat, lng);
+
+                    points.add(position);
+                }
+                lineOptions.addAll(points);
+                lineOptions.width(12);
+                lineOptions.color(Color.DKGRAY);
+                lineOptions.geodesic(true);
+            }
+
+            // Drawing polyline in the Google Map for the i-th route
+           lastPolyLine = googleMap.addPolyline(lineOptions);
+        }
+    }
+
+    private String getDirectionsUrl(LatLng origin, LatLng dest) {
+
+        // Origin of route
+        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
+
+        // Destination of route
+        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
+
+        // Sensor enabled
+        String sensor = "sensor=false";
+        String mode = "mode=cycling";
+        // Building the parameters to the web service
+        String parameters = str_origin + "&" + str_dest + "&" + sensor + "&" + mode + "&key=AIzaSyCdCRZNQzQb0CNUn9dmHB6M1Paq4_MOGqU";
+
+        // Output format
+        String output = "json";
+
+        // Building the url to the web service
+        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters;
+
+        return url;
+    }
+
+    /**
+     * A method to download json data from url
+     */
+    private String downloadUrl(String strUrl) throws IOException {
+        String data = "";
+        InputStream iStream = null;
+        HttpURLConnection urlConnection = null;
+        try {
+            URL url = new URL(strUrl);
+
+            urlConnection = (HttpURLConnection) url.openConnection();
+
+            urlConnection.connect();
+
+            iStream = urlConnection.getInputStream();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
+
+            StringBuffer sb = new StringBuffer();
+
+            String line = "";
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+            data = sb.toString();
+            br.close();
+
+        } catch (Exception e) {
+            Log.d("Exception", e.toString());
+        } finally {
+            iStream.close();
+            urlConnection.disconnect();
+        }
+        return data;
     }
 }
