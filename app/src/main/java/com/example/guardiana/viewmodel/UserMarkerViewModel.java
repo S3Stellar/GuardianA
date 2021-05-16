@@ -25,9 +25,8 @@ public class UserMarkerViewModel extends ViewModel {
         return userMarkerRepository.update(userEmail, update);
     }
 
-    public LiveData<UserMarkerResponse> getAllElementsByLocationFilters(
+    public LiveData<UserMarkerResponse> getAllUserMarkersByPerimeter(
             Map<String, String> attr, int page, int size) {
         return userMarkerRepository.getAllUserMarkersByPerimeter(attr, page, size);
     }
-
 }

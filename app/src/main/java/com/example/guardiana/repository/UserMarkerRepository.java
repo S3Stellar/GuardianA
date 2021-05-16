@@ -60,6 +60,7 @@ public class UserMarkerRepository {
             public void onFailure(@NotNull Call<UserMarker[]> call,
                                   Throwable t) {
                 UserMarkerResponse userMarkerResponse = new UserMarkerResponse();
+                userMarkerResponse.setFlag(-1);
                 userMarkerResponse.setStatusCode(500);
                 userMarkerResponse.setMessage(t.getMessage());
                 userMarkerResponseMutableLiveData.setValue(userMarkerResponse);

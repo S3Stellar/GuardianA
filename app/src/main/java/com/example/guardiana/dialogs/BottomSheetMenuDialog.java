@@ -1,6 +1,8 @@
 package com.example.guardiana.dialogs;
 
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.example.guardiana.R;
 import com.example.guardiana.customViews.AbstractBaseView;
@@ -18,6 +22,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static android.content.ContentValues.TAG;
 
 public class BottomSheetMenuDialog extends BottomSheetDialogFragment {
 
@@ -90,6 +96,12 @@ public class BottomSheetMenuDialog extends BottomSheetDialogFragment {
         }
     }
 
+    @Override
+    public int show(@NonNull FragmentTransaction transaction, @Nullable String tag) {
+        Log.i(TAG, "show: in show");
+        return super.show(transaction, tag);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -99,6 +111,13 @@ public class BottomSheetMenuDialog extends BottomSheetDialogFragment {
         addBottomSheetViews();
         connectViews();
         return v;
+    }
+
+    public int getWindowHeight() {
+        // Calculate window height for fullscreen use
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        return displayMetrics.heightPixels;
     }
 
     /* initialize the views  */
