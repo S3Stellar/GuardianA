@@ -1,5 +1,7 @@
 package com.example.guardiana.repository;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -24,7 +26,7 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 
 
 public class ElementRepository {
-    private static final MutableLiveData<ElementResponse> elementsMutableLiveData = new MutableLiveData<>();
+    private MutableLiveData<ElementResponse> elementsMutableLiveData;
     private static ElementRepository instance;
     private static WebElementService elementsApi;
 
@@ -34,7 +36,6 @@ public class ElementRepository {
     public static synchronized ElementRepository getInstance() {
         if (instance == null) {
             instance = new ElementRepository();
-            elementsMutableLiveData.setValue(new ElementResponse(200));
             elementsApi = new Retrofit.Builder()
                     .baseUrl(WebElementService.URL)
                     .addConverterFactory(JacksonConverterFactory.create()).build().create(WebElementService.class);
@@ -42,6 +43,10 @@ public class ElementRepository {
         return instance;
     }
 
+    public void initMutableLiveData(){
+        elementsMutableLiveData = new MutableLiveData<>();
+        elementsMutableLiveData.setValue(new ElementResponse());
+    }
     public LiveData<ElementResponse> getAllElementsByLocationFilters(Map<String, String> attr, String sortBy, String sortOrder, int page, int size) {
         elementsApi.getAllElementsByLocationFilters(attr, sortBy, sortOrder, page, size).enqueue(new Callback<Element[]>() {
             @Override
@@ -52,7 +57,7 @@ public class ElementRepository {
                     elementResponse.setStatusCode(response.code());
 
                     elementResponse.setElementList(new ArrayList<>());
-
+//                    elementsMutableLiveData.getValue().getElementList()
                     List<Element> responseList = Arrays.stream(response.body()).collect(Collectors.toList());
                     elementResponse.getElementList().addAll(responseList);
                     elementsMutableLiveData.setValue(elementResponse);
@@ -101,22 +106,23 @@ public class ElementRepository {
             @Override
             public void onResponse(@NotNull Call<Void> call, @NotNull Response<Void> response) {
                 ElementResponse elementResponse = new ElementResponse();
-                elementResponse.setFlag(2);
+                elementResponse.setFlag(2); // Update indicate number 2
                 elementResponse.setStatusCode(response.code());
-                elementResponse.setElementList(new ArrayList<>(elementsMutableLiveData.getValue().getElementList()));
+//                elementResponse.setElementList(new ArrayList<>(elementsMutableLiveData.getValue().getElementList()));
 
-                Element oldElement = elementResponse.getElementList().stream()
-                        .filter(element -> elementId.equals(element.getId()))
-                        .findAny()
-                        .orElse(null);
-     /*           Predicate<Element> condition = element -> element.getId().equals(update.getId());
-                elementResponse.getElementList().removeIf(condition);
-                elementResponse.getElementList().add(0, update);*/
-                compareFieldsAndUpdate(oldElement, update);
+//                Element oldElement = elementResponse.getElementList().stream()
+//                        .filter(element -> elementId.equals(element.getId()))
+//                        .findAny()
+//                        .orElse(null);
+//     /*           Predicate<Element> condition = element -> element.getId().equals(update.getId());
+//                elementResponse.getElementList().removeIf(condition);
+//                elementResponse.getElementList().add(0, update);*/
+//                compareFieldsAndUpdate(oldElement, update);
                 elementsMutableLiveData.setValue(elementResponse);
             }
 
             private void compareFieldsAndUpdate(Element oldElement, Element update) {
+                Log.i("TAG", "compareFieldsAndUpdate: " + oldElement.getId() +  " "  + update.getId());
                 if(!empty(update.getIcon()))
                     oldElement.setType(update.getType());
                 if(!empty(update.getName()))

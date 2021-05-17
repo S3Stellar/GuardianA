@@ -34,7 +34,7 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/ic_register_hero"
+                    android:src="@drawable/byc_logo"
                     android:layout_alignParentTop="true"
                     android:layout_alignParentRight="true"/>
             </RelativeLayout>
@@ -68,7 +68,7 @@
                 style="@style/viewParent"
                 android:text="Forgot Password?"
                 android:id="@+id/forgot_pass_butt"
-                android:textColor="@color/primaryTextColor"
+                android:textColor="@color/black"
                 android:textSize="@dimen/newsMoreTextSize"
                 android:layout_gravity="end"
                 android:layout_marginTop="10dp"/>x
@@ -76,24 +76,26 @@
             <br.com.simplepass.loading_button_lib.customViews.CircularProgressButton
                 android:id="@+id/cirLoginButton"
                 style="@style/loginButton"
-                app:spinning_bar_width="4dp"
-                app:spinning_bar_color="#FFF"
-                android:text="Login"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/loginViewsMargin"
+                android:background="#352D2D"
+                android:text="Login"
+                app:initialCornerAngle="27dp"
+                app:spinning_bar_color="#FFF"
                 app:spinning_bar_padding="6dp"
-                app:initialCornerAngle="27dp"/>
+                app:spinning_bar_width="4dp" />
 
             <TextView
-                style="@style/parent"
                 android:id="@+id/reg_now"
-                android:textAlignment="center"
-                android:textStyle="bold"
-                android:textColor="@color/themeColor"
-                android:textSize="17sp"
-                android:text="New user? Register Now"
+                style="@style/parent"
                 android:layout_marginTop="@dimen/loginViewsMargin"
-                android:onClick="onLoginClick"/>
+                android:backgroundTint="#090909"
+                android:onClick="onLoginClick"
+                android:text="New user? Register Now"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:textSize="17sp"
+                android:textStyle="bold" />
 
 
             <LinearLayout

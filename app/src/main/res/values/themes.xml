@@ -79,7 +79,7 @@
 
     <style name="modifiedEditText" parent="parent">
         <item name="android:textSize">@dimen/newsMoreTextSize</item>
-        <item name="android:backgroundTint">@color/primaryTextColor</item>
+        <item name="android:backgroundTint">@color/splash_screen_bg_color</item>
     </style>
 
     <style name="loginButton" parent="viewParent">

@@ -37,5 +37,7 @@ public abstract class AbstractBaseView extends AbstractCustomLayout {
         textView.setText(text);
     }
 
-
+    public TextView getTextView() {
+        return textView;
+    }
 }

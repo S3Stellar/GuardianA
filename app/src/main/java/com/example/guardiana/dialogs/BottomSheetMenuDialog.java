@@ -96,6 +96,7 @@ public class BottomSheetMenuDialog extends BottomSheetDialogFragment {
         }
     }
 
+
     @Override
     public int show(@NonNull FragmentTransaction transaction, @Nullable String tag) {
         Log.i(TAG, "show: in show");

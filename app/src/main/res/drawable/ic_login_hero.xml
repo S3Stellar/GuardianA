@@ -174,7 +174,7 @@ xmlns:aapt="http://schemas.android.com/aapt"
         android:fillAlpha="0.96"
         android:strokeAlpha="0.96">
         <aapt:attr name="android:fillColor">
-<gradient 
+<gradient
 
         android:startY="1.1281629314422617"
         android:startX="-15.513887012481689"
@@ -189,7 +189,7 @@ xmlns:aapt="http://schemas.android.com/aapt"
         android:fillAlpha="0.96"
         android:strokeAlpha="0.96">
         <aapt:attr name="android:fillColor">
-<gradient 
+<gradient
 
         android:startY="-42.092054391860955"
         android:startX="-4.841254528045653"
@@ -202,7 +202,7 @@ xmlns:aapt="http://schemas.android.com/aapt"
         android:fillAlpha="0.96"
         android:strokeAlpha="0.96">
         <aapt:attr name="android:fillColor">
-<gradient 
+<gradient
 
         android:startY="-47.28123951911927"
         android:startX="-33.407166919708246"

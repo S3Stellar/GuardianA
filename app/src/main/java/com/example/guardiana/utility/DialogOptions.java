@@ -12,7 +12,8 @@ public final class DialogOptions {
 
         public static final int DRIVE = 3;
 
-        public static final int LIKE = 0;
-        public static final int DISLIKE = 1;
+        public static final String LIKE = "LIKE";
+
+        public static final String DISLIKE = "DISLIKE";
     }
 }

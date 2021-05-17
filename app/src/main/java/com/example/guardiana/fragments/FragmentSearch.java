@@ -267,7 +267,7 @@ public class FragmentSearch extends Fragment {
 
 
     private void setTopImageView() {
-        this.fragmentSearchBinding.fragmentSearchTopImageView.setImageResource(R.drawable.guardi);
+        this.fragmentSearchBinding.fragmentSearchTopImageView.setImageResource(R.drawable.rider_logo);
     }
 
     private void setBottomDialogOptions() {

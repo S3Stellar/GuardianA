@@ -29,6 +29,7 @@ import com.example.guardiana.clustermap.UserClusterManageRender;
 import com.example.guardiana.clustermap.UserClusterMarker;
 import com.example.guardiana.customViews.resources.BottomSheetAddressMenuResource;
 import com.example.guardiana.customViews.resources.BottomSheetReportMenuResource;
+import com.example.guardiana.customViews.resources.BottomSheetReportResource;
 import com.example.guardiana.dialogs.BottomSheetMenuDialog;
 import com.example.guardiana.model.Element;
 import com.example.guardiana.model.ElementCreator;
@@ -80,6 +81,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.security.auth.login.LoginException;
+
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
 import static android.content.ContentValues.TAG;
@@ -89,7 +92,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
     private GoogleMap googleMap;
     private MapView mMapView;
     private ElementsViewModel elementsViewModel;
-    private UserMarkerViewModel userMarkerViewModel;
+    //    private UserMarkerViewModel userMarkerViewModel;
     private Observer<ElementResponse> elementResponseObserver;
     private Observer<UserMarkerResponse> userMarkerResponseObserver;
     private Set<Element> displayedElements = new HashSet<>();
@@ -120,119 +123,74 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
         mMapView.onCreate(savedInstanceState);
         mMapView.onResume();
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
         elementsViewModel = new ViewModelProvider(requireActivity()).get(ElementsViewModel.class);
-        userMarkerViewModel = new ViewModelProvider(requireActivity()).get(UserMarkerViewModel.class);
+//        userMarkerViewModel = new ViewModelProvider(requireActivity()).get(UserMarkerViewModel.class);
 
         setElementResponseObserver();
         //setUserMarkerResponseObserver();
 
-        MapsInitializer.initialize(getActivity().getApplicationContext());
+        MapsInitializer.initialize(requireActivity());
 
         FloatingActionButton fab = view.findViewById(R.id.reportButton);
 
-        fab.setOnClickListener(this::showAlertDialogButtonClicked);
+        fab.setOnClickListener(v -> createReportSelectionView());
 
         mMapView.getMapAsync(this);
 
         return view;
     }
 
-    private void setUserMarkerResponseObserver() {
-        userMarkerResponseObserver = response -> {
-            if (response.getStatusCode() == 200) {
-                // Load users' markers flag
-                if (response.getFlag() == 0) {
-                    Set<UserMarker> oldMarkers = new HashSet<>(displayedMarkers);
-                    displayedMarkers.addAll(response.getUserMarkerList());
-                    displayedMarkers.removeAll(oldMarkers);
-
-                    for (UserMarker userMarker : displayedMarkers) {
-                        UserClusterMarker userClusterMarker = new UserClusterMarker("Snippet", userMarker);
-                        userClusterManager.addItem(userClusterMarker);
-                        userClusterManager.cluster();
-                    }
-                    displayedMarkers.addAll(oldMarkers);
-                    Log.i(TAG, "setUserMarkerResponseObserver: " + displayedMarkers);
-                } else if (response.getFlag() == 1) {
-                    Toast.makeText(getContext(), "Status 200 - create userMarker", Toast.LENGTH_SHORT).show();
-                }
-            } else {
-                new SweetAlertDialog(getContext()).setTitleText("Error").setContentText(response.getMessage()).show();
-            }
-        };
-    }
-
-
     private void setElementResponseObserver() {
         elementResponseObserver = response -> {
-            if (response.getStatusCode() == 200) {
+            Log.i(TAG, "setElementResponseObserver: " + response.getFlag());
+            if (response.getStatusCode() == 200 || response.getStatusCode() == 0) {
                 // Load elements flag
                 if (response.getFlag() == 0) {
-                    Set<Element> oldElements = new HashSet<>(displayedElements);
+                    // Get the element which currently displayed
+//                    Set<Element> oldElements = new HashSet<>(displayedElements);
+//
+//                    // Add the new elements which got in the response
+//                    displayedElements.addAll(response.getElementList());
+//
+//                    // Remove the old elements
+//                    displayedElements.removeAll(oldElements);
+//
+//                    for (Element element : displayedElements) {
+//                        ReportClusterMarker reportClusterMarker = new ReportClusterMarker("Snippet", element);
+//                        reportClusterManager.addItem(reportClusterMarker);
+//                        reportClusterManager.cluster();
+//                    }
+//                    displayedElements.addAll(oldElements);
+                    reportClusterManager.clearItems();
+                    displayedElements.clear();
                     displayedElements.addAll(response.getElementList());
-                    displayedElements.removeAll(oldElements);
-
                     for (Element element : displayedElements) {
                         ReportClusterMarker reportClusterMarker = new ReportClusterMarker("Snippet", element);
                         reportClusterManager.addItem(reportClusterMarker);
                         reportClusterManager.cluster();
                     }
-                    displayedElements.addAll(oldElements);
                 } else if (response.getFlag() == 1) {
                     Toast.makeText(getContext(), "Status 200 - create element", Toast.LENGTH_SHORT).show();
                 }
             } else {
-                new SweetAlertDialog(getContext()).setTitleText("Error").setContentText(response.getMessage()).show();
+                new SweetAlertDialog(requireActivity()).setTitleText("Error").setContentText(response.getMessage()).show();
             }
         };
     }
 
-    public void showAlertDialogButtonClicked(View view) {
-        // create an alert builder
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Report");
-
-        // set the custom layout
-        final View customLayout = getLayoutInflater().inflate(R.layout.report_layout, null);
-        builder.setView(customLayout);
-
-        // add a button
-        builder.setPositiveButton("OK", (dialog, which) -> {
-            // send data from the AlertDialog to the Activity
-            //EditText editText = customLayout.findViewById(R.id.editText);
-            //sendDialogDataToActivity(editText.getText().toString());
-        });
-
-        setReportButtonListeners(customLayout);
-
-        // create and show the alert dialog
-        AlertDialog dialog = builder.create();
-        dialog.show();
+    private void createReportSelectionView() {
+        BottomSheetReportMenuResource resources = new BottomSheetReportMenuResource(getActivity());
+        BottomSheetMenuDialog bottomSheetDialog = new BottomSheetMenuDialog
+                .Builder().setHeader("Do you want to set new alert ?")
+                .setNumberRows(1).setNumberCols(4)
+                .setResources(resources)
+                .setOnClickEvent(pos -> sendReport(resources.getResources().get(pos).getTextView().getText().toString().toUpperCase()))
+                .build();
+        //TODO need to check how to write it correctly
+        bottomSheetDialog.show(getParentFragmentManager(), "bottomSheetDialog");
     }
 
-    private void setReportButtonListeners(View customLayout) {
-        customLayout.findViewById(R.id.accidentButton).setOnClickListener(v -> {
-            Toast.makeText(getContext(), "accidentButton", Toast.LENGTH_SHORT).show();
-            sendReport("ACCIDENT");
-        });
-        customLayout.findViewById(R.id.policeButton).setOnClickListener(v -> {
-            Toast.makeText(getContext(), "policeButton", Toast.LENGTH_SHORT).show();
-            sendReport("POLICE");
-        });
-        customLayout.findViewById(R.id.pumpButton);
-        customLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(getContext(), "pumpButton", Toast.LENGTH_SHORT).show();
-                sendReport("PUMP");
-            }
-        });
-        customLayout.findViewById(R.id.protestButton).setOnClickListener(v -> {
-            Toast.makeText(getContext(), "protestButton", Toast.LENGTH_SHORT).show();
-            sendReport("PROTEST");
-        });
-    }
 
     private void sendReport(String reportType) {
         elementsViewModel.create(new Element(
@@ -243,6 +201,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
                 new ElementCreator(App.getUserId()),
                 new com.example.guardiana.model.Location(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()),
                 new HashMap<>())).observe(requireActivity(), elementResponseObserver);
+        Log.i(TAG, "sendReport: ");
     }
 
 
@@ -274,18 +233,6 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
         });
     }
 
-    private void loadUserMarkersFromServer() {
-        Map<String, String> attrMap = new HashMap<>();
-        VisibleRegion visibleRegion = googleMap.getProjection().getVisibleRegion();
-        LatLng northeast = visibleRegion.latLngBounds.northeast;
-        LatLng southwest = visibleRegion.latLngBounds.southwest;
-
-        attrMap.put("minLat", southwest.latitude + "");
-        attrMap.put("maxLat", northeast.latitude + "");
-        attrMap.put("minLng", southwest.longitude + "");
-        attrMap.put("maxLng", northeast.longitude + "");
-        userMarkerViewModel.getAllUserMarkersByPerimeter(attrMap, 0, 10).observe(requireActivity(), userMarkerResponseObserver);
-    }
 
     private void initClusterManager() {
         if (googleMap != null) {
@@ -307,10 +254,9 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
 
             googleMap.setOnCameraIdleListener(reportClusterManager);
             reportClusterManager.setRenderer(clusterManagerRender);
-          //  userClusterManager.setRenderer(userClusterManageRender);
+            //  userClusterManager.setRenderer(userClusterManageRender);
 
             reportClusterManager.setOnClusterItemClickListener(item -> {
-                Toast.makeText(getContext(), "itemCLicked", Toast.LENGTH_SHORT).show();
                 createDialog(item);
                 return false;
             });
@@ -318,32 +264,19 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
     }
 
     private void createDialog(ReportClusterMarker item) {
+        BottomSheetReportResource resources = new BottomSheetReportResource(getActivity());
         BottomSheetMenuDialog bottomSheetDialog = new BottomSheetMenuDialog
                 .Builder()
-                .setHeader("Have you noticed it ?")
+                .setHeader("Is it still there ?")
                 .setNumberRows(1)
                 .setNumberCols(2)
-                .setResources(new BottomSheetReportMenuResource(getActivity()))
+                .setResources(resources)
+                .setOnClickEvent(pos -> {
+                    elementsViewModel.updateItem(requireActivity(), resources, pos, item);
+                })
                 .build();
 
         bottomSheetDialog.show(getParentFragmentManager(), "bottomSheetDialog");
-        bottomSheetDialog.setOnCustomViewClickEvent((pos) -> {
-            Element updatedElement = item.getElement();
-            int currentThreshold = (int) updatedElement.getElementAttribute().get("threshold");
-            updatedElement.getElementAttribute().put(App.getUserId(), "");
-            updatedElement.getElementAttribute().put("reporter", App.getUserId());
-            switch (pos) {
-                case DialogOptions.BottomDialog.LIKE:
-                    updatedElement.getElementAttribute().put("threshold", currentThreshold + 1);
-                    break;
-
-                case DialogOptions.BottomDialog.DISLIKE:
-                    updatedElement.getElementAttribute().put("threshold", currentThreshold - 1);
-                    break;
-            }
-            elementsViewModel.update(item.getElement().getId(), updatedElement);
-            bottomSheetDialog.dismiss();
-        });
     }
 
     @NotNull
@@ -376,11 +309,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
 
     private void requestCurrentLocation() {
         // Request permission
-        if (ActivityCompat.checkSelfPermission(
-                getContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION) ==
-                PackageManager.PERMISSION_GRANTED) {
-
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             Task<Location> currentLocationTask = fusedLocationClient.getCurrentLocation(
                     PRIORITY_HIGH_ACCURACY,
                     cancellationTokenSource.getToken());
@@ -487,7 +416,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
                             // Start downloading json data from Google Directions API
                             new DownloadTask().execute(url);
 
-                            if(lastMarker != null)
+                            if (lastMarker != null)
                                 lastMarker.remove();
 
                             lastMarker = googleMap.addMarker(new MarkerOptions()
@@ -560,7 +489,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
             PolylineOptions lineOptions = new PolylineOptions();
 
             // Remove last drawn polyline (route)
-            if(lastPolyLine != null)
+            if (lastPolyLine != null)
                 lastPolyLine.remove();
 
             for (int i = 0; i < result.size(); i++) {
@@ -585,7 +514,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
             }
 
             // Drawing polyline in the Google Map for the i-th route
-           lastPolyLine = googleMap.addPolyline(lineOptions);
+            lastPolyLine = googleMap.addPolyline(lineOptions);
         }
     }
 
@@ -647,4 +576,43 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
         }
         return data;
     }
+
+    private void setUserMarkerResponseObserver() {
+        userMarkerResponseObserver = response -> {
+            if (response.getStatusCode() == 200) {
+                // Load users' markers flag
+                if (response.getFlag() == 0) {
+                    Set<UserMarker> oldMarkers = new HashSet<>(displayedMarkers);
+                    displayedMarkers.addAll(response.getUserMarkerList());
+                    displayedMarkers.removeAll(oldMarkers);
+
+                    for (UserMarker userMarker : displayedMarkers) {
+                        UserClusterMarker userClusterMarker = new UserClusterMarker("Snippet", userMarker);
+                        userClusterManager.addItem(userClusterMarker);
+                        userClusterManager.cluster();
+                    }
+                    displayedMarkers.addAll(oldMarkers);
+                    Log.i(TAG, "setUserMarkerResponseObserver: " + displayedMarkers);
+                } else if (response.getFlag() == 1) {
+                    Toast.makeText(getContext(), "Status 200 - create userMarker", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                new SweetAlertDialog(getContext()).setTitleText("Error").setContentText(response.getMessage()).show();
+            }
+        };
+    }
+
+    private void loadUserMarkersFromServer() {
+        Map<String, String> attrMap = new HashMap<>();
+        VisibleRegion visibleRegion = googleMap.getProjection().getVisibleRegion();
+        LatLng northeast = visibleRegion.latLngBounds.northeast;
+        LatLng southwest = visibleRegion.latLngBounds.southwest;
+
+        attrMap.put("minLat", southwest.latitude + "");
+        attrMap.put("maxLat", northeast.latitude + "");
+        attrMap.put("minLng", southwest.longitude + "");
+        attrMap.put("maxLng", northeast.longitude + "");
+//        userMarkerViewModel.getAllUserMarkersByPerimeter(attrMap, 0, 10).observe(requireActivity(), userMarkerResponseObserver);
+    }
+
 }
