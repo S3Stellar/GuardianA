@@ -162,9 +162,18 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
 //                        reportClusterManager.cluster();
 //                    }
 //                    displayedElements.addAll(oldElements);
+                    response.getElementList().forEach(e-> {
+                        Log.i(TAG, "setElementResponseObserver: " + e.getId());
+
+                    });
+                    Log.i(TAG, "");
+                    Log.i(TAG, "------------------------------: ");
+
                     reportClusterManager.clearItems();
+                    reportClusterManager.cluster();
                     displayedElements.clear();
                     displayedElements.addAll(response.getElementList());
+
                     for (Element element : displayedElements) {
                         ReportClusterMarker reportClusterMarker = new ReportClusterMarker("Snippet", element);
                         reportClusterManager.addItem(reportClusterMarker);
@@ -530,7 +539,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
         String sensor = "sensor=false";
         String mode = "mode=cycling";
         // Building the parameters to the web service
-        String parameters = str_origin + "&" + str_dest + "&" + sensor + "&" + mode + "&key=ENTER_API_KEY";
+        String parameters = str_origin + "&" + str_dest + "&" + sensor + "&" + mode + "&key=\n";
 
         // Output format
         String output = "json";
