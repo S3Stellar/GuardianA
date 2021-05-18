@@ -24,7 +24,7 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 public class ElementsViewModel extends ViewModel {
 
     private final ElementRepository elementRepository;
-    private MutableLiveData<Location> locationMutableLiveData = new MutableLiveData<>();
+    private final MutableLiveData<Location> locationMutableLiveData = new MutableLiveData<>();
 
     public ElementsViewModel() {
         elementRepository = ElementRepository.getInstance();
@@ -43,14 +43,14 @@ public class ElementsViewModel extends ViewModel {
         return elementRepository.getAllElementsByLocationFilters(attr, sortBy, sortOrder, page, size);
     }
 
-    public LiveData<ElementResponse> getAllElements(String type, String value, String sortBy, String sortOrder, int page, int size) {
-        return elementRepository.getAllElementsByFilters(type, value, sortBy, sortOrder, page, size);
-    }
+//    public LiveData<ElementResponse> getAllElements(String type, String value, String sortBy, String sortOrder, int page, int size) {
+//        return elementRepository.getAllElementsByFilters(type, value, sortBy, sortOrder, page, size);
+//    }
 
 
-    public LiveData<ElementResponse> deleteAll() {
-        return elementRepository.deleteAll();
-    }
+//    public LiveData<ElementResponse> deleteAll() {
+//        return elementRepository.deleteAll();
+//    }
 
     public LiveData<Location> getLocation() {
         return locationMutableLiveData;
