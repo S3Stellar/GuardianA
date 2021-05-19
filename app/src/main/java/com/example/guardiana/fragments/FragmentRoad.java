@@ -15,7 +15,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
@@ -25,22 +24,15 @@ import com.example.guardiana.App;
 import com.example.guardiana.R;
 import com.example.guardiana.clustermap.ClusterManagerRender;
 import com.example.guardiana.clustermap.ReportClusterMarker;
-import com.example.guardiana.clustermap.UserClusterManageRender;
-import com.example.guardiana.clustermap.UserClusterMarker;
-import com.example.guardiana.customViews.resources.BottomSheetAddressMenuResource;
 import com.example.guardiana.customViews.resources.BottomSheetReportMenuResource;
 import com.example.guardiana.customViews.resources.BottomSheetReportResource;
 import com.example.guardiana.dialogs.BottomSheetMenuDialog;
 import com.example.guardiana.model.Element;
 import com.example.guardiana.model.ElementCreator;
-import com.example.guardiana.model.UserMarker;
 import com.example.guardiana.repository.ElementResponse;
-import com.example.guardiana.repository.UserMarkerResponse;
-import com.example.guardiana.utility.DialogOptions;
 import com.example.guardiana.utility.DirectionsJSONParser;
+import com.example.guardiana.utility.StatusCode;
 import com.example.guardiana.viewmodel.ElementsViewModel;
-import com.example.guardiana.viewmodel.UserMarkerViewModel;
-import com.firebase.ui.auth.data.model.User;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -62,7 +54,6 @@ import com.google.android.gms.maps.model.VisibleRegion;
 import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 
 import org.jetbrains.annotations.NotNull;
@@ -81,8 +72,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.security.auth.login.LoginException;
-
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
 import static android.content.ContentValues.TAG;
@@ -90,23 +79,15 @@ import static com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCU
 
 public class FragmentRoad extends Fragment implements OnMapReadyCallback {
     private GoogleMap googleMap;
-    private MapView mMapView;
-    private ElementsViewModel elementsViewModel;
-    //    private UserMarkerViewModel userMarkerViewModel;
-    private Observer<ElementResponse> elementResponseObserver;
-    private Observer<UserMarkerResponse> userMarkerResponseObserver;
-    private Set<Element> displayedElements = new HashSet<>();
-    private Set<UserMarker> displayedMarkers = new HashSet<>();
-    private Location lastKnownLocation;
-
-    private ClusterManager<ReportClusterMarker> reportClusterManager;
-    private ClusterManagerRender clusterManagerRender;
-
-    private ClusterManager<UserClusterMarker> userClusterManager;
-    private UserClusterManageRender userClusterManageRender;
-
     // The Fused Location Provider provides access to location APIs.
     private FusedLocationProviderClient fusedLocationClient;
+    private Location lastKnownLocation;
+
+    private ElementsViewModel elementsViewModel;
+    private final Set<Element> displayedElements = new HashSet<>();
+    private Observer<ElementResponse> elementResponseObserver;
+    private ClusterManager<ReportClusterMarker> reportClusterManager;
+    private ClusterManagerRender clusterManagerRender;
 
     // Allows class to cancel the location request if it exits the activity.
     // Typically, you use one cancellation source per lifecycle.
@@ -119,16 +100,14 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_road, container, false);
 
-        mMapView = view.findViewById(R.id.mapView);
+        MapView mMapView = view.findViewById(R.id.mapView);
         mMapView.onCreate(savedInstanceState);
         mMapView.onResume();
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
         elementsViewModel = new ViewModelProvider(requireActivity()).get(ElementsViewModel.class);
-//        userMarkerViewModel = new ViewModelProvider(requireActivity()).get(UserMarkerViewModel.class);
 
         setElementResponseObserver();
-        //setUserMarkerResponseObserver();
 
         MapsInitializer.initialize(requireActivity());
 
@@ -143,40 +122,29 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
 
     private void setElementResponseObserver() {
         elementResponseObserver = response -> {
-            Log.i(TAG, "setElementResponseObserver: " + response.getFlag());
-            if (response.getStatusCode() == 200 || response.getStatusCode() == 0) {
-                // Load elements flag
-                if (response.getFlag() == 0) {
-                    // Get the element which currently displayed
-//                    Set<Element> oldElements = new HashSet<>(displayedElements);
-//
-//                    // Add the new elements which got in the response
-//                    displayedElements.addAll(response.getElementList());
-//
-//                    // Remove the old elements
-//                    displayedElements.removeAll(oldElements);
-//
-//                    for (Element element : displayedElements) {
-//                        ReportClusterMarker reportClusterMarker = new ReportClusterMarker("Snippet", element);
-//                        reportClusterManager.addItem(reportClusterMarker);
-//                        reportClusterManager.cluster();
-//                    }
-//                    displayedElements.addAll(oldElements);
-                    reportClusterManager.clearItems();
-                    displayedElements.clear();
+            if (response.getStatusCode() == StatusCode.OK) {
+                if (response.getFlag() == ElementResponse.flagTypes.GET.ordinal()) {
+                    clear();
                     displayedElements.addAll(response.getElementList());
-                    for (Element element : displayedElements) {
+                    displayedElements.forEach(element -> {
                         ReportClusterMarker reportClusterMarker = new ReportClusterMarker("Snippet", element);
                         reportClusterManager.addItem(reportClusterMarker);
                         reportClusterManager.cluster();
-                    }
-                } else if (response.getFlag() == 1) {
-                    Toast.makeText(getContext(), "Status 200 - create element", Toast.LENGTH_SHORT).show();
+                    });
+                } else if (response.getFlag() == ElementResponse.flagTypes.CREATE.ordinal() || response.getFlag() == ElementResponse.flagTypes.UPDATE.ordinal()) {
+                    clear();
+                    loadElementsFromServer();
                 }
             } else {
                 new SweetAlertDialog(requireActivity()).setTitleText("Error").setContentText(response.getMessage()).show();
             }
         };
+    }
+
+    private void clear() {
+        reportClusterManager.clearItems();
+        reportClusterManager.cluster();
+        displayedElements.clear();
     }
 
     private void createReportSelectionView() {
@@ -187,7 +155,6 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
                 .setResources(resources)
                 .setOnClickEvent(pos -> sendReport(resources.getResources().get(pos).getTextView().getText().toString().toUpperCase()))
                 .build();
-        //TODO need to check how to write it correctly
         bottomSheetDialog.show(getParentFragmentManager(), "bottomSheetDialog");
     }
 
@@ -201,7 +168,6 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
                 new ElementCreator(App.getUserId()),
                 new com.example.guardiana.model.Location(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()),
                 new HashMap<>())).observe(requireActivity(), elementResponseObserver);
-        Log.i(TAG, "sendReport: ");
     }
 
 
@@ -228,7 +194,6 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
             initClusterManager();
             requestCurrentLocation();
             loadElementsFromServer();
-            //loadUserMarkersFromServer();
             cameraMoveLoadElementsListener();
         });
     }
@@ -239,23 +204,11 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
             if (reportClusterManager == null) {
                 reportClusterManager = new ClusterManager<>(requireActivity(), googleMap);
             }
-
-/*            if(userClusterManager == null){
-                userClusterManager = new ClusterManager<>(requireActivity(), googleMap);
-            }*/
-
             if (clusterManagerRender == null) {
                 clusterManagerRender = new ClusterManagerRender(getActivity(), googleMap, reportClusterManager);
             }
-
-    /*        if(userClusterManageRender == null) {
-                userClusterManageRender = new UserClusterManageRender(getActivity(), googleMap, userClusterManager);
-            }*/
-
             googleMap.setOnCameraIdleListener(reportClusterManager);
             reportClusterManager.setRenderer(clusterManagerRender);
-            //  userClusterManager.setRenderer(userClusterManageRender);
-
             reportClusterManager.setOnClusterItemClickListener(item -> {
                 createDialog(item);
                 return false;
@@ -277,6 +230,18 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
                 .build();
 
         bottomSheetDialog.show(getParentFragmentManager(), "bottomSheetDialog");
+    }
+
+    private void loadElementsFromServer() {
+        Map<String, String> attrMap = new HashMap<>();
+        VisibleRegion visibleRegion = googleMap.getProjection().getVisibleRegion();
+        LatLng northeast = visibleRegion.latLngBounds.northeast;
+        LatLng southwest = visibleRegion.latLngBounds.southwest;
+        attrMap.put("minLat", southwest.latitude + "");
+        attrMap.put("maxLat", northeast.latitude + "");
+        attrMap.put("minLng", southwest.longitude + "");
+        attrMap.put("maxLng", northeast.longitude + "");
+        elementsViewModel.getAllElementsByLocationFilters(attrMap, "", "", 0, 20).observe(requireActivity(), elementResponseObserver);
     }
 
     @NotNull
@@ -306,6 +271,22 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
             }
         };
     }
+
+
+    private void cameraMoveLoadElementsListener() {
+        googleMap.setOnCameraIdleListener(this::loadElementsFromServer);
+    }
+
+
+    private void initializeMyLocation(Location lastKnownLocation) {
+        this.lastKnownLocation = lastKnownLocation;
+        LatLng yourLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+        // googleMap.addMarker(new MarkerOptions().position(yourLocation).title("Title").snippet("Marker Description"));
+        // For zooming functionality
+        CameraPosition cameraPosition = new CameraPosition.Builder().target(yourLocation).zoom(18).build();
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+    }
+
 
     private void requestCurrentLocation() {
         // Request permission
@@ -341,44 +322,6 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
             // TODO: Request fine location permission
             Log.d(TAG, "Request fine location permission.");
         }
-    }
-
-    private void cameraMoveLoadElementsListener() {
-        googleMap.setOnCameraIdleListener(() -> {
-            loadElementsFromServer();
-        });
-    }
-
-    private void onClusterItemClick() {
-        reportClusterManager.setOnClusterItemClickListener(item -> {
-
-            return false;
-        });
-
-    }
-
-    private void initializeMyLocation(Location lastKnownLocation) {
-        this.lastKnownLocation = lastKnownLocation;
-        LatLng yourLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-        // googleMap.addMarker(new MarkerOptions().position(yourLocation).title("Title").snippet("Marker Description"));
-        // For zooming functionality
-        CameraPosition cameraPosition = new CameraPosition.Builder().target(yourLocation).zoom(18).build();
-        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-    }
-
-    private void loadElementsFromServer() {
-        Map<String, String> attrMap = new HashMap<>();
-        VisibleRegion visibleRegion = googleMap.getProjection().getVisibleRegion();
-        LatLng northeast = visibleRegion.latLngBounds.northeast;
-        LatLng southwest = visibleRegion.latLngBounds.southwest;
-
-        attrMap.put("minLat", southwest.latitude + "");
-        attrMap.put("maxLat", northeast.latitude + "");
-        attrMap.put("minLng", southwest.longitude + "");
-        attrMap.put("maxLng", northeast.longitude + "");
-
-        // @TODO Calculate size ratio of elements per map size (zoom)
-        elementsViewModel.getAllElementsByLocationFilters(attrMap, "", "", 0, 20).observe(requireActivity(), elementResponseObserver);
     }
 
     // Method called when Drive button is clicked and route has to be shown
@@ -418,7 +361,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
 
                             if (lastMarker != null)
                                 lastMarker.remove();
-
+                            Log.i(TAG, "onHiddenChanged: " + endLocation.getLat() + " " + endLocation.getLat());
                             lastMarker = googleMap.addMarker(new MarkerOptions()
                                     .position(new LatLng(endLocation.getLat(), endLocation.getLng()))
                                     .title("Destination")
@@ -527,10 +470,10 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
         String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
 
         // Sensor enabled
-        String sensor = "sensor=false";
+        String sensor = "sensor=true";
         String mode = "mode=bicycling";
         // Building the parameters to the web service
-        String parameters = str_origin + "&" + str_dest + "&" + sensor + "&" + mode + "&key=AIzaSyCdCRZNQzQb0CNUn9dmHB6M1Paq4_MOGqU";
+        String parameters = str_origin + "&" + str_dest + "&" + sensor + "&" + mode + "&key=\n";
 
         // Output format
         String output = "json";
@@ -577,42 +520,5 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
         return data;
     }
 
-    private void setUserMarkerResponseObserver() {
-        userMarkerResponseObserver = response -> {
-            if (response.getStatusCode() == 200) {
-                // Load users' markers flag
-                if (response.getFlag() == 0) {
-                    Set<UserMarker> oldMarkers = new HashSet<>(displayedMarkers);
-                    displayedMarkers.addAll(response.getUserMarkerList());
-                    displayedMarkers.removeAll(oldMarkers);
-
-                    for (UserMarker userMarker : displayedMarkers) {
-                        UserClusterMarker userClusterMarker = new UserClusterMarker("Snippet", userMarker);
-                        userClusterManager.addItem(userClusterMarker);
-                        userClusterManager.cluster();
-                    }
-                    displayedMarkers.addAll(oldMarkers);
-                    Log.i(TAG, "setUserMarkerResponseObserver: " + displayedMarkers);
-                } else if (response.getFlag() == 1) {
-                    Toast.makeText(getContext(), "Status 200 - create userMarker", Toast.LENGTH_SHORT).show();
-                }
-            } else {
-                new SweetAlertDialog(getContext()).setTitleText("Error").setContentText(response.getMessage()).show();
-            }
-        };
-    }
-
-    private void loadUserMarkersFromServer() {
-        Map<String, String> attrMap = new HashMap<>();
-        VisibleRegion visibleRegion = googleMap.getProjection().getVisibleRegion();
-        LatLng northeast = visibleRegion.latLngBounds.northeast;
-        LatLng southwest = visibleRegion.latLngBounds.southwest;
-
-        attrMap.put("minLat", southwest.latitude + "");
-        attrMap.put("maxLat", northeast.latitude + "");
-        attrMap.put("minLng", southwest.longitude + "");
-        attrMap.put("maxLng", northeast.longitude + "");
-//        userMarkerViewModel.getAllUserMarkersByPerimeter(attrMap, 0, 10).observe(requireActivity(), userMarkerResponseObserver);
-    }
 
 }
