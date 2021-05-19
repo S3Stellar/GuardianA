@@ -18,8 +18,8 @@ import retrofit2.http.QueryMap;
 
 public interface WebElementService {
     //Emulator IP: 10.0.2.2
-    String URL = "http://10.0.2.2:8087/elements/";
-    //String URL = "http://10.0.0.2:8087/elements/";
+    //String URL = "http://10.0.2.2:8087/elements/";
+    String URL = "http://10.0.0.20:8087/elements/";
 
 
     @POST(".")
