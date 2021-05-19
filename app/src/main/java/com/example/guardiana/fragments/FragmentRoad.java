@@ -495,7 +495,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
         String sensor = "sensor=true";
         String mode = "mode=bicycling";
         // Building the parameters to the web service
-        String parameters = str_origin + "&" + str_dest + "&" + sensor + "&" + mode + "&key=AIzaSyCdCRZNQzQb0CNUn9dmHB6M1Paq4_MOGqU\n";
+        String parameters = str_origin + "&" + str_dest + "&" + sensor + "&" + mode + "&key=API_KEY_HERE\n";
 
         // Output format
         String output = "json";
