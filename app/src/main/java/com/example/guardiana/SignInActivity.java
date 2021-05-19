@@ -4,11 +4,14 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.guardiana.model.Profile;
@@ -17,6 +20,9 @@ import com.example.guardiana.repository.firebase.ProfileFirebaseRepository;
 import com.firebase.ui.auth.AuthMethodPickerLayout;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
+import com.github.ybq.android.spinkit.sprite.Sprite;
+import com.github.ybq.android.spinkit.style.DoubleBounce;
+import com.github.ybq.android.spinkit.style.ThreeBounce;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -31,6 +37,8 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Objects;
+
+import br.com.simplepass.loading_button_lib.customViews.CircularProgressButton;
 
 import static android.content.ContentValues.TAG;
 
@@ -47,7 +55,9 @@ public class SignInActivity extends Activity {
     private long pressTime = 0;
     private ProfileFirebaseRepository profileFirebaseRepository;
     private UserMarkerRepository userMarkerRepository;
-
+    private Vibrator mVibrator;
+    private Toast toast;
+    private ProgressBar progressBar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +67,11 @@ public class SignInActivity extends Activity {
         password = findViewById(R.id.editTextPassword);
         mAuth = FirebaseAuth.getInstance();
         userMarkerRepository = UserMarkerRepository.getInstance();
+        mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        toast = new Toast(getApplicationContext());
+
+        progressBar = (ProgressBar)findViewById(R.id.loadingBar);
+        progressBar.setIndeterminateDrawable(new ThreeBounce());
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.googleWebClientLogin))
@@ -64,7 +79,6 @@ public class SignInActivity extends Activity {
                 .build();
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
-
         setListeners();
     }
 
@@ -73,6 +87,7 @@ public class SignInActivity extends Activity {
         findViewById(R.id.cirLoginButton).setOnClickListener(v -> onLoginClick(v));
 
         findViewById(R.id.google_butt).setOnClickListener(v -> {
+            mVibrator.vibrate(80);
             Intent signInIntent = mGoogleSignInClient.getSignInIntent();
             startActivityForResult(signInIntent, GGO_SIGNIN_CODE);
         });
@@ -84,6 +99,7 @@ public class SignInActivity extends Activity {
 
     // Phone butt clicked
     private void phoneLogin(View view) {
+        mVibrator.vibrate(80);
         AuthMethodPickerLayout customLayout = new AuthMethodPickerLayout
                 .Builder(R.layout.activity_sign_in)
                 .setPhoneButtonId(R.id.phone_butt)
@@ -105,6 +121,7 @@ public class SignInActivity extends Activity {
 
     // Forgot pass clicked - sends email for pass recovery
     private void sendPasswordResetEmail() {
+        mVibrator.vibrate(80);
         if (email.getText().toString().isEmpty()) {
             Toast.makeText(SignInActivity.this, "Please type your email first",
                     Toast.LENGTH_SHORT).show();
@@ -123,6 +140,7 @@ public class SignInActivity extends Activity {
 
     // Sign up clicked - Plus butt / Register Now
     private void signUp(View view) {
+        mVibrator.vibrate(80);
         AuthMethodPickerLayout customLayout = new AuthMethodPickerLayout
                 .Builder(R.layout.activity_sign_in)
                 .setEmailButtonId(R.id.reg_now)
@@ -143,59 +161,13 @@ public class SignInActivity extends Activity {
                 SIGNUP_CODE);
     }
 
-
-    /*@Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        // Phone butt / +Plus butt / Register Now
-
-        if (requestCode == PHONE_LOGIN_CODE ) {
-            IdpResponse response = IdpResponse.fromResultIntent(data);
-            if (resultCode == RESULT_OK) {
-                // Successfully signed in
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                userMarkerRepository.update(user.getEmail(),
-                        new UserMarker(user.getEmail(), new Location(0,0), true, true, 0)).
-                        observe(, new Observer<UserMarkerResponse>() {
-                            @Override
-                            public void onChanged(UserMarkerResponse userMarkerResponse) {
-
-                            }
-                        });
-                profileFirebaseRepository = ProfileFirebaseRepository.getInstance();
-                checkNewUserAndSave(response, user);
-                // ...
-            } else {
-                manager.setLoggedIn(false);
-                // Sign in failed. If response is null the user canceled the
-                // sign-in flow using the back button. Otherwise check
-                // response.getError().getErrorCode() and handle the error.
-            }
-        }
-
-        // Google butt result
-        if (requestCode == GGO_SIGNIN_CODE) {
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            try {
-                // Google Sign In was successful, authenticate with Firebase
-                GoogleSignInAccount account = task.getResult(ApiException.class);
-                firebaseAuthWithGoogle(account.getIdToken());
-            } catch (ApiException e) {
-                // Google Sign In failed, update UI appropriately
-                manager.setLoggedIn(false);
-            }
-        }
-    }*/
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         // Phone butt / +Plus butt / Register Now
-
         if (requestCode == PHONE_LOGIN_CODE || requestCode == SIGNUP_CODE) {
-            
+
             IdpResponse response = IdpResponse.fromResultIntent(data);
             if (resultCode == RESULT_OK) {
                 // Successfully signed in
@@ -252,6 +224,7 @@ public class SignInActivity extends Activity {
 
     // Login with Google button
     private void firebaseAuthWithGoogle(String idToken) {
+        progressBar.setVisibility(View.VISIBLE);
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
@@ -272,6 +245,7 @@ public class SignInActivity extends Activity {
                         Toast.makeText(SignInActivity.this, "Wrong email or password.",
                                 Toast.LENGTH_SHORT).show();
                     }
+                    progressBar.setVisibility(View.INVISIBLE);
                 });
     }
 
@@ -279,7 +253,11 @@ public class SignInActivity extends Activity {
     // Login using login button passing email & password
     public void onLoginClick(View view) {
         mAuth = FirebaseAuth.getInstance();
-        if (!email.getText().toString().isEmpty() && !password.getText().toString().isEmpty())
+        mVibrator.vibrate(80);
+        CircularProgressButton r = findViewById(R.id.cirLoginButton);
+
+        if (!email.getText().toString().isEmpty() && !password.getText().toString().isEmpty()) {
+            r.startAnimation();
             mAuth.signInWithEmailAndPassword(email.getText().toString(), password.getText().toString()).addOnCompleteListener(this, task -> {
                 if (task.isSuccessful()) {
                     // Sign in success, update UI with the signed-in user's information
@@ -289,7 +267,21 @@ public class SignInActivity extends Activity {
                     Toast.makeText(SignInActivity.this, "Wrong email or password.",
                             Toast.LENGTH_SHORT).show();
                 }
+                r.revertAnimation();
             });
+        } else {
+            showAToast("Please enter login details.");
+        }
+    }
+
+    public void showAToast(String st) { //"Toast toast" is declared in the class
+        try {
+            toast.getView().isShown();     // true if visible
+            toast.setText(st);
+        } catch (Exception e) {         // invisible if exception
+            toast = Toast.makeText(this, st, Toast.LENGTH_SHORT);
+        }
+        toast.show();  //finally display it
     }
 
     // Hide keyboard on screen click

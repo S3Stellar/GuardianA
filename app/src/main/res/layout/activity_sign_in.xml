@@ -10,6 +10,7 @@
     android:focusableInTouchMode="true"
     android:gravity="center"
     android:layout_gravity="center">
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -26,6 +27,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
                 <TextView
+                    android:paddingTop="50dp"
                     android:layout_centerVertical="true"
                     android:layout_alignParentLeft="true"
                     style="@style/viewParent.headerText.NoMode"
@@ -34,7 +36,8 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/byc_logo"
+                    android:src="@drawable/ic_login_hero"
+
                     android:layout_alignParentTop="true"
                     android:layout_alignParentRight="true"/>
             </RelativeLayout>
@@ -71,14 +74,22 @@
                 android:textColor="@color/black"
                 android:textSize="@dimen/newsMoreTextSize"
                 android:layout_gravity="end"
-                android:layout_marginTop="10dp"/>x
+                android:layout_marginTop="10dp"/>
+
+            <com.github.ybq.android.spinkit.SpinKitView
+                android:id="@+id/loadingBar"
+                style="@style/SpinKitView.Large.Circle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="invisible"
+                android:layout_gravity="center"
+                app:SpinKit_Color="@color/colorAccent" />
 
             <br.com.simplepass.loading_button_lib.customViews.CircularProgressButton
                 android:id="@+id/cirLoginButton"
                 style="@style/loginButton"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/loginViewsMargin"
-                android:background="#352D2D"
                 android:text="Login"
                 app:initialCornerAngle="27dp"
                 app:spinning_bar_color="#FFF"
@@ -92,6 +103,8 @@
                 android:backgroundTint="#090909"
                 android:onClick="onLoginClick"
                 android:text="New user? Register Now"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
                 android:textAlignment="center"
                 android:textColor="@color/black"
                 android:textSize="17sp"
@@ -138,6 +151,8 @@
                     android:id="@+id/phone_butt"
                     android:layout_width="45dp"
                     android:layout_height="37dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
                     android:src="@drawable/phone" />
 
                 <ImageView
@@ -145,6 +160,8 @@
                     android:layout_width="43dp"
                     android:layout_height="match_parent"
                     android:layout_marginLeft="10dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
                     android:src="@drawable/google" />
             </LinearLayout>
 
