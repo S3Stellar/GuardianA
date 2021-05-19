@@ -227,10 +227,12 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
                 .setNumberRows(1)
                 .setNumberCols(2)
                 .setResources(resources)
-                .setOnClickEvent(pos -> {
-                    elementsViewModel.updateItem(requireActivity(), resources, pos, item);
-                })
                 .build();
+
+        bottomSheetDialog.setOnCustomViewClickEvent(pos -> {
+            elementsViewModel.updateItem(requireActivity(), resources, pos, item);
+            bottomSheetDialog.dismiss();
+        });
 
         bottomSheetDialog.show(getParentFragmentManager(), "bottomSheetDialog");
     }
@@ -493,7 +495,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
         String sensor = "sensor=true";
         String mode = "mode=bicycling";
         // Building the parameters to the web service
-        String parameters = str_origin + "&" + str_dest + "&" + sensor + "&" + mode + "&key=\n";
+        String parameters = str_origin + "&" + str_dest + "&" + sensor + "&" + mode + "&key=AIzaSyCdCRZNQzQb0CNUn9dmHB6M1Paq4_MOGqU\n";
 
         // Output format
         String output = "json";
