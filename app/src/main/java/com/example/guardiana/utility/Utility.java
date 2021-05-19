@@ -24,7 +24,7 @@ public final class Utility {
     public static boolean isDay() {
         Calendar c = Calendar.getInstance();
         int timeOfDay = c.get(Calendar.HOUR_OF_DAY);
-        return timeOfDay < 19;
+        return timeOfDay < 14;
     }
 
 }

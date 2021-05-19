@@ -47,10 +47,13 @@ import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Dot;
+import com.google.android.gms.maps.model.Gap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PatternItem;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.VisibleRegion;
@@ -69,6 +72,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -382,11 +386,6 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
                             if (lastMarker != null)
                                 lastMarker.remove();
                             Log.i(TAG, "onHiddenChanged: " + endLocation.getLat() + " " + endLocation.getLat());
-                            lastMarker = googleMap.addMarker(new MarkerOptions()
-                                    .position(new LatLng(endLocation.getLat(), endLocation.getLng()))
-                                    .title("Destination")
-                                    .icon(BitmapDescriptorFactory
-                                            .fromResource(R.drawable.flag)));
 
                         } else {
                             // Task failed with an exception
@@ -448,7 +447,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
 
         @Override
         protected void onPostExecute(List<List<HashMap<String, String>>> result) {
-            ArrayList points = null;
+            ArrayList<LatLng> points = null;
             PolylineOptions lineOptions = new PolylineOptions();
 
             // Remove last drawn polyline (route)
@@ -456,7 +455,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
                 lastPolyLine.remove();
 
             for (int i = 0; i < result.size(); i++) {
-                points = new ArrayList();
+                points = new ArrayList<>();
                 lineOptions = new PolylineOptions();
 
                 List<HashMap<String, String>> path = result.get(i);
@@ -472,12 +471,20 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
                 }
                 lineOptions.addAll(points);
                 lineOptions.width(12);
-                lineOptions.color(Color.DKGRAY);
+                int color = Utility.isDay() ? Color.DKGRAY : Color.WHITE;
+                lineOptions.color(color);
                 lineOptions.geodesic(true);
-            }
 
+            }
+            List<PatternItem> pattern = Arrays.<PatternItem>asList(new Dot(), new Gap(3f));
             // Drawing polyline in the Google Map for the i-th route
             lastPolyLine = googleMap.addPolyline(lineOptions);
+            lastPolyLine.setPattern(pattern);
+            lastMarker = googleMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(lastPolyLine.getPoints().get(0).latitude, lastPolyLine.getPoints().get(0).longitude))
+                    .title("Destination")
+                    .icon(BitmapDescriptorFactory
+                            .fromResource(R.drawable.flag)));
         }
     }
 
@@ -493,7 +500,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
         String sensor = "sensor=true";
         String mode = "mode=bicycling";
         // Building the parameters to the web service
-        String parameters = str_origin + "&" + str_dest + "&" + sensor + "&" + mode + "&key=\n";
+        String parameters = str_origin + "&" + str_dest + "&" + sensor + "&" + mode + "&key=AIzaSyCdCRZNQzQb0CNUn9dmHB6M1Paq4_MOGqU\n";
 
         // Output format
         String output = "json";
