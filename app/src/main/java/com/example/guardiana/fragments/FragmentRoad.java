@@ -2,6 +2,7 @@ package com.example.guardiana.fragments;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.AsyncTask;
@@ -32,6 +33,7 @@ import com.example.guardiana.model.ElementCreator;
 import com.example.guardiana.repository.ElementResponse;
 import com.example.guardiana.utility.DirectionsJSONParser;
 import com.example.guardiana.utility.StatusCode;
+import com.example.guardiana.utility.Utility;
 import com.example.guardiana.viewmodel.ElementsViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -46,6 +48,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
@@ -277,13 +280,30 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
         googleMap.setOnCameraIdleListener(this::loadElementsFromServer);
     }
 
-
     private void initializeMyLocation(Location lastKnownLocation) {
         this.lastKnownLocation = lastKnownLocation;
         LatLng yourLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
         // googleMap.addMarker(new MarkerOptions().position(yourLocation).title("Title").snippet("Marker Description"));
         // For zooming functionality
-        CameraPosition cameraPosition = new CameraPosition.Builder().target(yourLocation).zoom(18).build();
+//        CameraPosition currentposition = googleMap.getCameraPosition();
+        CameraPosition cameraPosition = new CameraPosition
+                .Builder()
+                .target(yourLocation)
+                .zoom(40)
+//                .bearing(currentposition.bearing)
+                .tilt(30)
+                .build();
+        try {
+            int style = Utility.isDay() ? R.raw.day : R.raw.night;
+            boolean success = googleMap.setMapStyle(
+                    MapStyleOptions.loadRawResourceStyle(
+                            requireActivity(), style));
+            if (!success) {
+                Log.e(TAG, "Style parsing failed.");
+            }
+        } catch (Resources.NotFoundException e) {
+            Log.e(TAG, "Can't find style. Error: ", e);
+        }
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 

@@ -33,6 +33,7 @@ import com.example.guardiana.model.Location;
 import com.example.guardiana.model.Profile;
 import com.example.guardiana.repository.AddressResponse;
 import com.example.guardiana.utility.DialogOptions;
+import com.example.guardiana.utility.Utility;
 import com.example.guardiana.viewmodel.AddressViewModel;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.common.api.Status;
@@ -182,7 +183,7 @@ public class FragmentSearch extends Fragment {
      * Setup the Welcome header with the current active user
      */
     private void setWelcomeHeader() {
-        fragmentSearchBinding.welcomeText.setText(addressViewModel.showDayMessage());
+        fragmentSearchBinding.welcomeText.setText(Utility.showDayMessage());
     }
 
 
