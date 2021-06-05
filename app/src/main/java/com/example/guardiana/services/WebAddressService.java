@@ -14,8 +14,8 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface WebAddressService {
-        public static final String URL = "http://10.0.2.2:8088/addresses/";
-//        public static final String URL = "http://10.0.0.20:8088/addresses/";
+//        public static final String URL = "http://10.0.2.2:8088/addresses/";
+        public static final String URL = "http://10.100.102.48:8088/addresses/";
 
     @POST(".")
     Call<Address> create(@Body Address address);

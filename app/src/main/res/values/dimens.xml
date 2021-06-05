@@ -6,4 +6,7 @@
 
     <dimen name="custom_marker_size">33dp</dimen>
     <dimen name="custom_marker_padding">2dp</dimen>
+
+
+    <dimen name="contentTextSize">16dp</dimen>
 </resources>
