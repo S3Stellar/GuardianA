@@ -177,9 +177,11 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     for (final Detector.Recognition result : results) {
                         final RectF location = result.getLocation();
                         if (location != null && result.getConfidence() >= minimumConfidence) {
+                            Log.i("TAG", "" + Thread.currentThread());
                             if (result.getTitle().equals("person")) {
+                                Log.i("TAG", "PERSON DETECTED ");
                                 showAToast("PERSON");
-     /*                           ZadakNotification.with(this)
+                                ZadakNotification.with(this)
                                         .load()
                                         .notificationChannelId("CHANNEL_ID_PERSON")
                                         .title("Person")
@@ -189,7 +191,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                                         .largeIcon(R.drawable.ic_launcher)
                                         .flags(Notification.DEFAULT_ALL)
                                         .simple()
-                                        .build();*/
+                                        .build();
                             }
 
                             cropToFrameTransform.mapRect(location);
@@ -206,12 +208,15 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     }
 
     public void showAToast(String st) { //"Toast toast" is declared in the class
-        try {
-            toast.getView().isShown();     // true if visible
-            toast.setText(st);
-        } catch (Exception e) {         // invisible if exception
-            toast = Toast.makeText(this, st, Toast.LENGTH_SHORT);
-        }
+            try {
+                toast = Toast.makeText(this, st, Toast.LENGTH_SHORT);
+                computingDetection = false;
+                Thread.sleep(5000);
+                computingDetection = true;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
         toast.show();  //finally display it
     }
 
