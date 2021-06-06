@@ -7,8 +7,6 @@ import java.util.Map;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
-import retrofit2.http.FieldMap;
-import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
@@ -18,8 +16,8 @@ import retrofit2.http.QueryMap;
 
 public interface WebElementService {
     //Emulator IP: 10.0.2.2
-    String URL = "http://10.0.2.2:8087/elements/";
-//    String URL = "http://10.0.0.20:8087/elements/";
+    //public static final String URL = "http://10.0.2.2:8087/elements/";
+    String URL = "http://10.0.0.1:8087/elements/";
 
 
     @POST(".")

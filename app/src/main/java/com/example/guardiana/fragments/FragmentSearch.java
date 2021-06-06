@@ -23,14 +23,13 @@ import com.example.guardiana.PreferencesManager;
 import com.example.guardiana.R;
 import com.example.guardiana.SignInActivity;
 import com.example.guardiana.adapters.AddressAdapter;
-import com.example.guardiana.customViews.concretecustomviews.bottommenu.BottomMenuService;
 import com.example.guardiana.customViews.resources.BottomSheetAddressMenuResource;
 import com.example.guardiana.customViews.resources.BottomSheetFavoriteResource;
 import com.example.guardiana.databinding.FragmentSearchBinding;
 import com.example.guardiana.dialogs.BottomSheetMenuDialog;
 import com.example.guardiana.model.Address;
 import com.example.guardiana.model.Location;
-import com.example.guardiana.model.Profile;
+import com.example.guardiana.objectdetect.DetectorActivity;
 import com.example.guardiana.repository.AddressResponse;
 import com.example.guardiana.utility.DialogOptions;
 import com.example.guardiana.utility.Utility;
@@ -47,7 +46,6 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -292,7 +290,7 @@ public class FragmentSearch extends Fragment {
                         break;
 
                     case DialogOptions.BottomDialog.SEND_LOCATION:
-                        addressViewModel.sendLocation(Objects.requireNonNull(getContext()), addressAdapter.getCurrentList().get(position).getLocation());
+                        addressViewModel.sendLocation(requireContext(), addressAdapter.getCurrentList().get(position).getLocation());
 
                         break;
                     case DialogOptions.BottomDialog.SET_PRIORITY:
@@ -317,9 +315,12 @@ public class FragmentSearch extends Fragment {
                         favSheetDialog.show(getParentFragmentManager(), "favSheetDialog");
                         break;
                     case DialogOptions.BottomDialog.DRIVE:
+                        startActivity(new Intent(requireActivity(), DetectorActivity.class));
+
                         bottomSheetDialog.dismiss();
                         Bundle bundle = new Bundle();
                         bundle.putSerializable("location", addressAdapter.getCurrentList().get(position).getLocation());
+
                         Fragment fragment_road = getActivity().getSupportFragmentManager().findFragmentByTag("frag_road");
                         fragment_road.setArguments(bundle);
                         Fragment fragment_search = getActivity().getSupportFragmentManager().findFragmentByTag("frag_search");
@@ -330,7 +331,6 @@ public class FragmentSearch extends Fragment {
                 }
             });
         });
-
     }
 
     //TODO: only for testing

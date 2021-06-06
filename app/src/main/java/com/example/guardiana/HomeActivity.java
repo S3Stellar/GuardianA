@@ -23,6 +23,9 @@ public class HomeActivity extends AppCompatActivity {
         fragmentRoad = new FragmentRoad();
         fragmentSearch = new FragmentSearch();
 
+/*        Intent object = new Intent(this, ObjectDetectActivity.class);
+        startActivity(object);*/
+
         addFragments();
 
         chipNavigationBar = findViewById(R.id.bottom_nav_menu);

@@ -15,8 +15,8 @@ import retrofit2.http.QueryMap;
 
 public interface WebUserMarkerService {
     //Emulator IP: 10.0.2.2
-    //String URL = "http://10.0.2.2:8089/markers/";
-    String URL = "http://10.0.0.20:8089/markers/";
+    //public static final String URL = "http://10.0.2.2:8089/markers/";
+    String URL = "http://10.0.0.1:8089/markers/";
 
 
     @POST(".")
@@ -29,5 +29,4 @@ public interface WebUserMarkerService {
     Call<UserMarker[]> getAllUserMarkersByPerimeter(@QueryMap Map<String, String> attr,
                                                     @Query("page") int page,
                                                     @Query("size") int size);
-
 }

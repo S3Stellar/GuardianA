@@ -16,7 +16,7 @@ public class Directions {
         String sensor = "sensor=true";
         String mode = "mode=bicycling";
         // Building the parameters to the web service
-        String parameters = str_origin + "&" + str_dest + "&" + sensor + "&" + mode + "&key=\n";
+        String parameters = str_origin + "&" + str_dest + "&" + sensor + "&" + mode + "&key=AIzaSyCdCRZNQzQb0CNUn9dmHB6M1Paq4_MOGqU\n";
 
         // Output format
         String output = "json";

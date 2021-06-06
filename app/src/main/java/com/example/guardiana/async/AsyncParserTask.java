@@ -32,6 +32,7 @@ public class AsyncParserTask extends AsyncTask<String, Integer, List<List<HashMa
     private GoogleMap googleMap;
     private static Polyline lastPolyLine;
     private static Marker targetMarker;
+
     public AsyncParserTask(GoogleMap googleMap) {
         this.googleMap = googleMap;
 
@@ -92,11 +93,12 @@ public class AsyncParserTask extends AsyncTask<String, Integer, List<List<HashMa
         lastPolyLine = googleMap.addPolyline(lineOptions);
 
         lastPolyLine.setPattern(pattern);
-        targetMarker = googleMap.addMarker(new MarkerOptions()
-                .position(new LatLng(lastPolyLine.getPoints().get(0).latitude, lastPolyLine.getPoints().get(0).longitude))
-                .title("Destination")
-                .icon(BitmapDescriptorFactory
-                        .fromResource(R.drawable.flag)));
+        if (lastPolyLine.getPoints() != null && !lastPolyLine.getPoints().isEmpty())
+            targetMarker = googleMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(lastPolyLine.getPoints().get(0).latitude, lastPolyLine.getPoints().get(0).longitude))
+                    .title("Destination")
+                    .icon(BitmapDescriptorFactory
+                            .fromResource(R.drawable.flag)));
     }
 }
 

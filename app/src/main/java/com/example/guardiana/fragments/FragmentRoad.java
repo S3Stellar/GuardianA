@@ -275,8 +275,5 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
         super.onHiddenChanged(hidden);
         Bundle bundle = getArguments();
         elementsViewModel.showRoute(fusedLocationClient, cancellationTokenSource, bundle, googleMap);
-
     }
-
-
 }

@@ -17,4 +17,8 @@
     <string name="googleWebClientLogin">251393833753-hpd7ai30di2p1hodbuh8a2uvs2rpa3d6.apps.googleusercontent.com</string>
     <string name="login_email_hint">Email</string>
     <string name="login_password_hint">Password</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="camera_error">Camera error</string>
+    <string name="tfe_od_camera_error">This device doesn\'t support Camera2 API.</string>
 </resources>

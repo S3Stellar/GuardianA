@@ -1,7 +1,5 @@
 package com.example.guardiana.services;
 
-import androidx.lifecycle.LiveData;
-
 import com.example.guardiana.model.Address;
 
 import retrofit2.Call;
@@ -14,8 +12,8 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface WebAddressService {
-        public static final String URL = "http://10.0.2.2:8088/addresses/";
-//        public static final String URL = "http://10.0.0.20:8088/addresses/";
+    //public static final String URL = "http://10.0.2.2:8088/addresses/";
+    String URL = "http://10.0.0.1:8088/addresses/";
 
     @POST(".")
     Call<Address> create(@Body Address address);
@@ -31,12 +29,12 @@ public interface WebAddressService {
 
     @GET("byEmail/{user}")
     Call<Address[]> getAllAddresses(@Path("user") String user,
-                                        @Query("filterType") String type,
-                                        @Query("filterValue") String value,
-                                        @Query("sortBy") String sortBy,
-                                        @Query("sortOrder") String sortOrder,
-                                        @Query("page") int page,
-                                        @Query("size") int size);
+                                    @Query("filterType") String type,
+                                    @Query("filterValue") String value,
+                                    @Query("sortBy") String sortBy,
+                                    @Query("sortOrder") String sortOrder,
+                                    @Query("page") int page,
+                                    @Query("size") int size);
 
     @DELETE("{addressId}")
     Call<Void> delete(@Path("addressId") String addressId);

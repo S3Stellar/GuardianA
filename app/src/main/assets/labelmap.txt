@@ -1,0 +1,19 @@
+person
+bicycle
+car
+motorcycle
+bus
+train
+truck
+traffic light
+stop sign
+bird
+cat
+dog
+horse
+sheep
+cow
+elephant
+bear
+zebra
+giraffe
