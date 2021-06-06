@@ -3,25 +3,24 @@ package com.example.guardiana;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.guardiana.model.Profile;
+import com.example.guardiana.objectdetect.DetectorActivity;
 import com.example.guardiana.repository.UserMarkerRepository;
 import com.example.guardiana.repository.firebase.ProfileFirebaseRepository;
 import com.firebase.ui.auth.AuthMethodPickerLayout;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
-import com.github.ybq.android.spinkit.sprite.Sprite;
-import com.github.ybq.android.spinkit.style.DoubleBounce;
 import com.github.ybq.android.spinkit.style.ThreeBounce;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -61,6 +60,7 @@ public class SignInActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_sign_in);
         manager = new PreferencesManager(this);
         email = findViewById(R.id.editTextEmail);
@@ -123,14 +123,12 @@ public class SignInActivity extends Activity {
     private void sendPasswordResetEmail() {
         mVibrator.vibrate(80);
         if (email.getText().toString().isEmpty()) {
-            Toast.makeText(SignInActivity.this, "Please type your email first",
-                    Toast.LENGTH_SHORT).show();
+            showAToast("Please type your email first");
         } else {
             mAuth.sendPasswordResetEmail(email.getText().toString())
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            Toast.makeText(SignInActivity.this, "Check your email box!",
-                                    Toast.LENGTH_SHORT).show();
+                           showAToast("Check your email box!");
                             Log.d("TAG", "Email sent.");
                         }
                     });
@@ -219,7 +217,7 @@ public class SignInActivity extends Activity {
         manager.setLoggedIn(true);
 
         finish();
-        startActivity(new Intent(this, HomeActivity.class));
+        startActivity(new Intent(this, DetectorActivity.class));
     }
 
     // Login with Google button
@@ -242,8 +240,7 @@ public class SignInActivity extends Activity {
                         }
                     } else {
                         // If sign in fails, display a message to the user.
-                        Toast.makeText(SignInActivity.this, "Wrong email or password.",
-                                Toast.LENGTH_SHORT).show();
+                       showAToast("Wrong email or password.");
                     }
                     progressBar.setVisibility(View.INVISIBLE);
                 });
@@ -264,8 +261,7 @@ public class SignInActivity extends Activity {
                     loginSuccess(Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()));
                 } else {
                     // If sign in fails, display a message to the user.
-                    Toast.makeText(SignInActivity.this, "Wrong email or password.",
-                            Toast.LENGTH_SHORT).show();
+                    showAToast("Wrong email or password.");
                 }
                 r.revertAnimation();
             });

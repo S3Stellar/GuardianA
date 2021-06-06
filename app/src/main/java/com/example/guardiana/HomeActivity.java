@@ -1,5 +1,6 @@
 package com.example.guardiana;
 
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,18 +20,13 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_home);
         fragmentRoad = new FragmentRoad();
         fragmentSearch = new FragmentSearch();
-
-/*        Intent object = new Intent(this, ObjectDetectActivity.class);
-        startActivity(object);*/
-
         addFragments();
-
         chipNavigationBar = findViewById(R.id.bottom_nav_menu);
         chipNavigationBar.setItemSelected(R.id.bottom_nav_search, true);
-
         bottomMenu();
     }
 

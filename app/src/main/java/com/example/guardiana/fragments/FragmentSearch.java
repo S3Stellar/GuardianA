@@ -1,6 +1,5 @@
 package com.example.guardiana.fragments;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Geocoder;
 import android.os.Bundle;
@@ -24,16 +23,14 @@ import com.example.guardiana.PreferencesManager;
 import com.example.guardiana.R;
 import com.example.guardiana.SignInActivity;
 import com.example.guardiana.adapters.AddressAdapter;
-import com.example.guardiana.customViews.concretecustomviews.bottommenu.BottomMenuService;
 import com.example.guardiana.customViews.resources.BottomSheetAddressMenuResource;
 import com.example.guardiana.customViews.resources.BottomSheetFavoriteResource;
-import com.example.guardiana.databinding.CalibDialogBinding;
 import com.example.guardiana.databinding.FragmentSearchBinding;
 import com.example.guardiana.dialogs.BottomSheetMenuDialog;
 import com.example.guardiana.dialogs.CalibrationDialog;
 import com.example.guardiana.model.Address;
 import com.example.guardiana.model.Location;
-import com.example.guardiana.model.Profile;
+import com.example.guardiana.objectdetect.DetectorActivity;
 import com.example.guardiana.repository.AddressResponse;
 import com.example.guardiana.utility.DialogOptions;
 import com.example.guardiana.utility.Utility;
@@ -50,12 +47,10 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
@@ -76,7 +71,8 @@ public class FragmentSearch extends Fragment {
     private Runnable scrollRunnable;
     private Observer<AddressResponse> addressResponseObserver;
     private LinearLayoutManager layoutManager;
-    private boolean isCalibrationActive = true;
+    private boolean isCalibrationActive = false;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -295,7 +291,7 @@ public class FragmentSearch extends Fragment {
                         break;
 
                     case DialogOptions.BottomDialog.SEND_LOCATION:
-                        addressViewModel.sendLocation(Objects.requireNonNull(getContext()), addressAdapter.getCurrentList().get(position).getLocation());
+                        addressViewModel.sendLocation(requireContext(), addressAdapter.getCurrentList().get(position).getLocation());
 
                         break;
                     case DialogOptions.BottomDialog.SET_PRIORITY:
@@ -320,14 +316,13 @@ public class FragmentSearch extends Fragment {
                         favSheetDialog.show(getParentFragmentManager(), "favSheetDialog");
                         break;
                     case DialogOptions.BottomDialog.DRIVE:
-                        if (isCalibrationActive){
+                        if (isCalibrationActive) {
                             CalibrationDialog calibrationDialog = new CalibrationDialog(getActivity());
                             calibrationDialog.show();
-                            calibrationDialog.setOnDismissListener(dialog -> {
-                                drive(position, bottomSheetDialog);
-                            });
+                            calibrationDialog.setOnDismissListener(dialog -> drive(position, bottomSheetDialog));
 
-                        }else {
+                        } else {
+                            //startActivity(new Intent(requireContext(), DetectorActivity.class));
                             drive(position, bottomSheetDialog);
                         }
 
@@ -344,9 +339,14 @@ public class FragmentSearch extends Fragment {
         Fragment fragment_road = getActivity().getSupportFragmentManager().findFragmentByTag("frag_road");
         fragment_road.setArguments(bundle);
         Fragment fragment_search = getActivity().getSupportFragmentManager().findFragmentByTag("frag_search");
-        getActivity().getSupportFragmentManager().beginTransaction().hide(fragment_search)
-                .show(fragment_road).commit();
-        ((HomeActivity)getActivity()).getChipNavigationBar().setItemSelected(R.id.bottom_nav_map, true);
+        Fragment fragment_camera = getActivity().getSupportFragmentManager().findFragmentByTag("frag_camera");
+
+        if (fragment_search != null && fragment_camera != null) {
+            getActivity().getSupportFragmentManager().beginTransaction().hide(fragment_search)
+                    .show(fragment_road).show(fragment_camera).commit();
+        }
+
+        ((DetectorActivity) getActivity()).getChipNavigationBar().setItemSelected(R.id.bottom_nav_map, true);
         return;
     }
 

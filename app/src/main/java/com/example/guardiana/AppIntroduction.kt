@@ -8,6 +8,7 @@ import android.provider.Settings
 import android.view.View
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import com.example.guardiana.objectdetect.DetectorActivity
 import com.github.appintro.AppIntro
 import com.github.appintro.AppIntroFragment
 import com.github.appintro.AppIntroPageTransformerType
@@ -90,7 +91,7 @@ class AppIntroduction : AppIntro() {
     }
 
     private fun goToMain() {
-        startActivity(Intent(this, HomeActivity::class.java))
+        startActivity(Intent(this, DetectorActivity::class.java))
         finish()
     }
 

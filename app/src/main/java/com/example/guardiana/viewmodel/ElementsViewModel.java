@@ -63,11 +63,6 @@ public class ElementsViewModel extends AndroidViewModel {
         elementRepository.initMutableLiveData();
     }
 
-//    public ElementsViewModel() {
-//        elementRepository = ElementRepository.getInstance();
-//        elementRepository.initMutableLiveData();
-//    }
-
     public LiveData<ElementResponse> create(Element element) {
         return elementRepository.create(element);
     }
@@ -116,7 +111,7 @@ public class ElementsViewModel extends AndroidViewModel {
             update(updatedElement.getId(), updatedElement);
         } else {
             // bad operation
-            new SweetAlertDialog(activity).setTitleText("Bad Operation").setContentText("You already said you " + operation + " it").show();
+            new SweetAlertDialog(activity).setTitleText("Sorry").setContentText("You already said you " + operation + " it").show();
         }
     }
 
@@ -219,5 +214,4 @@ public class ElementsViewModel extends AndroidViewModel {
         if (lastPolyLine != null)
             lastPolyLine.remove();
     }
-
 }

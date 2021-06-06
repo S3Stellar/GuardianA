@@ -20,6 +20,8 @@ import com.example.guardiana.customViews.AbstractBaseView;
 import com.example.guardiana.customViews.resources.AbstractBottomSheetResource;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,6 +48,17 @@ public class BottomSheetMenuDialog extends BottomSheetDialogFragment {
     // Root layout
     private ConstraintLayout layout;
 
+    @Override
+    public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        getDialog().getWindow()
+                .getAttributes().windowAnimations = R.style.DialogAnimation;
+    }
+
+    @Override
+    public int getTheme() {
+        return R.style.AppBottomSheetDialogTheme;
+    }
 
     public BottomSheetMenuDialog(Builder builder) {
         this.header = builder.header;

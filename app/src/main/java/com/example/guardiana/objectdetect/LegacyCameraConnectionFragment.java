@@ -1,7 +1,6 @@
 package com.example.guardiana.objectdetect;
 
 import android.annotation.SuppressLint;
-import android.app.Fragment;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
@@ -15,6 +14,8 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.fragment.app.Fragment;
 
 import com.example.guardiana.R;
 import com.example.guardiana.objectdetect.customview.AutoFitTextureView;

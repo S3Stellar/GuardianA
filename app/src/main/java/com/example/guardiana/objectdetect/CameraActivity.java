@@ -1,8 +1,8 @@
 package com.example.guardiana.objectdetect;
 
 import android.Manifest;
-import android.app.Fragment;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
@@ -24,12 +24,20 @@ import android.widget.CompoundButton;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.example.guardiana.R;
+import com.example.guardiana.async.AsyncParserTask;
+import com.example.guardiana.fragments.FragmentRoad;
+import com.example.guardiana.fragments.FragmentSearch;
 import com.example.guardiana.objectdetect.utils.ImageUtils;
 import com.example.guardiana.objectdetect.utils.Logger;
+import com.ismaeldivita.chipnavigation.ChipNavigationBar;
 
 import java.nio.ByteBuffer;
+
+import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public abstract class CameraActivity extends AppCompatActivity
         implements OnImageAvailableListener,
@@ -54,17 +62,31 @@ public abstract class CameraActivity extends AppCompatActivity
     private Runnable imageConverter;
 
 
+    private ChipNavigationBar chipNavigationBar;
+    private FragmentSearch fragmentSearch;
+    private FragmentRoad fragmentRoad;
+    private Fragment fragmentCamera;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         LOGGER.d("onCreate " + this);
         super.onCreate(null);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        setContentView(R.layout.activity_camera);
+        // setContentView(R.layout.activity_camera);
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        setContentView(R.layout.activity_home);
+        fragmentRoad = new FragmentRoad();
+        fragmentSearch = new FragmentSearch();
+        setFragment();
+        addFragments();
+        chipNavigationBar = findViewById(R.id.bottom_nav_menu);
+        chipNavigationBar.setItemSelected(R.id.bottom_nav_search, true);
+        bottomMenu();
 
         if (hasPermission()) {
-            setFragment();
-
+            //setFragment();
             // May test 3/4 thread for optimal performance
             setNumThreads(4);
         } else {
@@ -341,30 +363,24 @@ public abstract class CameraActivity extends AppCompatActivity
     protected void setFragment() {
         String cameraId = chooseCamera();
 
-        Fragment fragment;
         if (useCamera2API) {
             CameraConnectionFragment camera2Fragment =
                     CameraConnectionFragment.newInstance(
-                            new CameraConnectionFragment.ConnectionCallback() {
-                                @Override
-                                public void onPreviewSizeChosen(final Size size, final int rotation) {
-                                    previewHeight = size.getHeight();
-                                    previewWidth = size.getWidth();
-                                    CameraActivity.this.onPreviewSizeChosen(size, rotation);
-                                }
+                            (size, rotation) -> {
+                                previewHeight = size.getHeight();
+                                previewWidth = size.getWidth();
+                                CameraActivity.this.onPreviewSizeChosen(size, rotation);
                             },
                             this,
                             getLayoutId(),
                             getDesiredPreviewFrameSize());
 
             camera2Fragment.setCamera(cameraId);
-            fragment = camera2Fragment;
+            fragmentCamera = camera2Fragment;
         } else {
-            fragment =
+            fragmentCamera =
                     new LegacyCameraConnectionFragment(this, getLayoutId(), getDesiredPreviewFrameSize());
         }
-
-        getFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
     }
 
     protected void fillBytes(final Image.Plane[] planes, final byte[][] yuvBytes) {
@@ -419,4 +435,57 @@ public abstract class CameraActivity extends AppCompatActivity
     protected abstract void setNumThreads(int numThreads);
 
     protected abstract void setUseNNAPI(boolean isChecked);
+
+    private void addFragments() {
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.fragment_container, fragmentCamera, "frag_camera")
+                .add(R.id.fragment_container, fragmentRoad, "frag_road")
+                .add(R.id.fragment_container, fragmentSearch, "frag_search")
+                .hide(fragmentCamera)
+                .hide(fragmentRoad)
+                .show(fragmentSearch).commit();
+    }
+
+    private void bottomMenu() {
+        chipNavigationBar.setOnItemSelectedListener(id -> {
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            if (R.id.bottom_nav_search == id) {
+                ft.setCustomAnimations(
+                        R.anim.slide_in,
+                        R.anim.slide_out
+                );
+                ft.show(fragmentSearch);
+                ft.hide(fragmentRoad);
+                ft.hide(fragmentCamera);
+            } else if (R.id.bottom_nav_map == id) {
+                ft.setCustomAnimations(R.anim.fui_slide_in_right, R.anim.fui_slide_out_left);
+                //ft.show(fragmentCamera);
+                ft.show(fragmentRoad);
+                ft.hide(fragmentSearch);
+            }
+            ft.commit();
+        });
+    }
+
+    @Override
+    public void onBackPressed() {
+        FragmentRoad myFragment = (FragmentRoad) getSupportFragmentManager().findFragmentByTag("frag_road");
+        if (myFragment != null && myFragment.isVisible() && FragmentRoad.isRouteShown
+                && AsyncParserTask.lastPolyLine != null && AsyncParserTask.targetMarker != null) {
+            new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
+                    .setTitleText("Cancel road ?")
+                    .setContentText("Would you like to cancel current road trip?")
+                    .setConfirmText("Yes, please!")
+                    .setConfirmClickListener(sweetAlertDialog -> {
+                        AsyncParserTask.lastPolyLine.remove();
+                        AsyncParserTask.targetMarker.remove();
+                        sweetAlertDialog.dismissWithAnimation();
+                    })
+                    .show();
+        }
+    }
+
+    public ChipNavigationBar getChipNavigationBar() {
+        return chipNavigationBar;
+    }
 }

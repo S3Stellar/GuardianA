@@ -30,8 +30,8 @@ import java.util.List;
 public class AsyncParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
     // Parsing the data in non-ui thread
     private GoogleMap googleMap;
-    private static Polyline lastPolyLine;
-    private static Marker targetMarker;
+    public static Polyline lastPolyLine;
+    public static Marker targetMarker;
 
     public AsyncParserTask(GoogleMap googleMap) {
         this.googleMap = googleMap;
@@ -100,6 +100,7 @@ public class AsyncParserTask extends AsyncTask<String, Integer, List<List<HashMa
                     .icon(BitmapDescriptorFactory
                             .fromResource(R.drawable.flag)));
     }
+
 }
 
 

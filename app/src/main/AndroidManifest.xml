@@ -22,8 +22,18 @@
         android:theme="@style/Theme.GuardianA"
         android:usesCleartextTraffic="true">
         <activity android:name=".objectdetect.CameraActivity" />
+<!--
+        <activity android:name=".objectdetect.DetectorActivity" />
+-->
 
-        <activity android:name=".objectdetect.DetectorActivity" /> <!-- Splash Screen Activity -->
+        <activity
+            android:name=".objectdetect.DetectorActivity"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".SplashScreen"
             android:theme="@style/Theme.SplashScreen">
@@ -33,13 +43,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
+
+        <!--<activity
             android:name=".HomeActivity"
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
-        </activity>
+        </activity>-->
+
         <activity
             android:name=".SignInActivity"
             android:theme="@style/AppTheme.NoActionBar" />

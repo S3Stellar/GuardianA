@@ -4,11 +4,11 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -53,12 +53,14 @@ import java.util.Set;
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
 import static android.content.ContentValues.TAG;
+import static android.content.Context.VIBRATOR_SERVICE;
 
 public class FragmentRoad extends Fragment implements OnMapReadyCallback {
     private GoogleMap googleMap;
     // The Fused Location Provider provides access to location APIs.
     private FusedLocationProviderClient fusedLocationClient;
     public static Location lastKnownLocation;
+    public static boolean isRouteShown;
 
     private ElementsViewModel elementsViewModel;
     private final Set<Element> displayedElements = new HashSet<>();
@@ -70,6 +72,9 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
     // Typically, you use one cancellation source per lifecycle.
     private final CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
     private LocationCallback locationCallback;
+    private FloatingActionButton fab;
+    private Vibrator mVibrator;
+
 
     @Nullable
     @Override
@@ -79,7 +84,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
         MapView mMapView = view.findViewById(R.id.mapView);
         mMapView.onCreate(savedInstanceState);
         mMapView.onResume();
-
+        mVibrator = (Vibrator) requireActivity().getSystemService(VIBRATOR_SERVICE);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
         elementsViewModel = new ViewModelProvider(requireActivity()).get(ElementsViewModel.class);
 
@@ -87,12 +92,14 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
 
         MapsInitializer.initialize(requireActivity());
 
-        FloatingActionButton fab = view.findViewById(R.id.reportButton);
-
-        fab.setOnClickListener(v -> createReportSelectionView());
+        fab = view.findViewById(R.id.reportButton);
+        fab.hide();
+        fab.setOnClickListener(v -> {
+            mVibrator.vibrate(80);
+            createReportSelectionView();
+        });
 
         mMapView.getMapAsync(this);
-
         return view;
     }
 
@@ -129,8 +136,13 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
                 .Builder().setHeader("Do you want to set new alert ?")
                 .setNumberRows(1).setNumberCols(4)
                 .setResources(resources)
-                .setOnClickEvent(pos -> sendReport(resources.getResources().get(pos).getTextView().getText().toString().toUpperCase()))
                 .build();
+        bottomSheetDialog.setOnCustomViewClickEvent(
+                pos -> {
+                    mVibrator.vibrate(80);
+                    sendReport(resources.getResources().get(pos).getTextView().getText().toString().toUpperCase());
+                    bottomSheetDialog.dismiss();
+                });
         bottomSheetDialog.show(getParentFragmentManager(), "bottomSheetDialog");
     }
 
@@ -146,16 +158,10 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
                 new HashMap<>())).observe(requireActivity(), elementResponseObserver);
     }
 
-
-    // do something with the data coming from the AlertDialog
-    private void sendDialogDataToActivity(String data) {
-        Toast.makeText(getContext(), data, Toast.LENGTH_SHORT).show();
-    }
-
     @Override
     public void onMapReady(@NotNull GoogleMap googleMap) {
         this.googleMap = googleMap;
-        if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(requireActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
@@ -172,6 +178,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
             requestCurrentLocation();
             loadElementsFromServer();
             cameraMoveLoadElementsListener();
+            fab.show();
         });
     }
 
@@ -187,6 +194,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
             googleMap.setOnCameraIdleListener(reportClusterManager);
             reportClusterManager.setRenderer(clusterManagerRender);
             reportClusterManager.setOnClusterItemClickListener(item -> {
+                mVibrator.vibrate(80);
                 createDialog(item);
                 return false;
             });
@@ -201,11 +209,12 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
                 .setNumberRows(1)
                 .setNumberCols(2)
                 .setResources(resources)
-                .setOnClickEvent(pos -> {
-                    elementsViewModel.updateItem(requireActivity(), resources, pos, item);
-                })
                 .build();
-
+        bottomSheetDialog.setOnCustomViewClickEvent(pos -> {
+            mVibrator.vibrate(80);
+            elementsViewModel.updateItem(requireActivity(), resources, pos, item);
+            bottomSheetDialog.dismiss();
+        });
         bottomSheetDialog.show(getParentFragmentManager(), "bottomSheetDialog");
     }
 
@@ -257,16 +266,11 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
         googleMap.setOnCameraIdleListener(this::loadElementsFromServer);
     }
 
-//    private void initializeMyLocation(Location lastKnownLocation) {
-//        this.lastKnownLocation = lastKnownLocation;
-//        elementsViewModel.initializeMyLocation(lastKnownLocation, googleMap);
-//    }
 
 
     private void requestCurrentLocation() {
         elementsViewModel.getCurrentLocation(googleMap, fusedLocationClient, cancellationTokenSource, locationCallback);
         // Request permission
-
     }
 
     // Method called when Drive button is clicked and route has to be shown
@@ -274,6 +278,7 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
         Bundle bundle = getArguments();
+        isRouteShown = true;
         elementsViewModel.showRoute(fusedLocationClient, cancellationTokenSource, bundle, googleMap);
     }
 }

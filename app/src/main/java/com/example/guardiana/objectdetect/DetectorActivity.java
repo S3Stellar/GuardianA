@@ -7,15 +7,12 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.RectF;
-import android.media.Image;
-import android.media.ImageReader;
 import android.media.ImageReader.OnImageAvailableListener;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.Size;
 import android.util.TypedValue;
 import android.widget.Toast;
-
 
 import com.example.guardiana.R;
 import com.example.guardiana.objectdetect.customview.OverlayView;
@@ -39,7 +36,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static final String TF_OD_API_LABELS_FILE = "labelmap.txt";
     private static final DetectorMode MODE = DetectorMode.TF_OD_API;
     // Minimum detection confidence to track a detection.
-    private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.55f;
+    private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.58f;
     private static final boolean MAINTAIN_ASPECT = false;
     private static final Size DESIRED_PREVIEW_SIZE = new Size(640, 480);
     private static final boolean SAVE_PREVIEW_BITMAP = false;
@@ -62,6 +59,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private Matrix cropToFrameTransform;
 
     private MultiBoxTracker tracker;
+    private Toast toast;
 
     @Override
     public void onPreviewSizeChosen(final Size size, final int rotation) {
@@ -70,6 +68,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                         TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE_DIP, getResources().getDisplayMetrics());
 
         tracker = new MultiBoxTracker(this);
+        toast = new Toast(getApplicationContext());
 
         int cropSize = TF_OD_API_INPUT_SIZE;
 
@@ -113,13 +112,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         trackingOverlay = findViewById(R.id.tracking_overlay);
         trackingOverlay.addCallback(
-                new OverlayView.DrawCallback() {
-                    @Override
-                    public void drawCallback(final Canvas canvas) {
-                        //tracker.draw(canvas);
-                        if (isDebug()) {
-                            //tracker.drawDebug(canvas);
-                        }
+                canvas -> {
+                    //tracker.draw(canvas);
+                    if (isDebug()) {
+                        //tracker.drawDebug(canvas);
                     }
                 });
 
@@ -177,10 +173,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                     for (final Detector.Recognition result : results) {
                         final RectF location = result.getLocation();
-                        if (location != null && result.getConfidence() >= MINIMUM_CONFIDENCE_TF_OD_API) {
-                            //canvas1.drawRect(location, paint);
-                            if(result.getTitle().equals("person")){
-                                Toast.makeText(this, "PERSON", Toast.LENGTH_SHORT).show();
+                        if (location != null && result.getConfidence() >= minimumConfidence) {
+                            if (result.getTitle().equals("person")) {
+                                showAToast("PERSON");
+                                Log.d("PERSON", "PERSON:");
                             }
 
                             cropToFrameTransform.mapRect(location);
@@ -195,6 +191,16 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                     computingDetection = false;
                 });
+    }
+
+    public void showAToast(String st) { //"Toast toast" is declared in the class
+        try {
+            toast.getView().isShown();     // true if visible
+            toast.setText(st);
+        } catch (Exception e) {         // invisible if exception
+            toast = Toast.makeText(this, st, Toast.LENGTH_SHORT);
+        }
+        toast.show();  //finally display it
     }
 
     @Override
