@@ -31,4 +31,7 @@
     <color name="whiteTextColor">#fff</color>
     <color name="primaryTextColor">#11CFC5</color>
 
+    <color name="df_transparent_black_background">#80000000</color>
+    <color name="whiteCardColor">#fff</color>
+    <color name="blackTextColor">#000</color>
 </resources>

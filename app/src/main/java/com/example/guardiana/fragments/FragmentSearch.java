@@ -1,5 +1,6 @@
 package com.example.guardiana.fragments;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Geocoder;
 import android.os.Bundle;
@@ -23,13 +24,16 @@ import com.example.guardiana.PreferencesManager;
 import com.example.guardiana.R;
 import com.example.guardiana.SignInActivity;
 import com.example.guardiana.adapters.AddressAdapter;
+import com.example.guardiana.customViews.concretecustomviews.bottommenu.BottomMenuService;
 import com.example.guardiana.customViews.resources.BottomSheetAddressMenuResource;
 import com.example.guardiana.customViews.resources.BottomSheetFavoriteResource;
+import com.example.guardiana.databinding.CalibDialogBinding;
 import com.example.guardiana.databinding.FragmentSearchBinding;
 import com.example.guardiana.dialogs.BottomSheetMenuDialog;
+import com.example.guardiana.dialogs.CalibrationDialog;
 import com.example.guardiana.model.Address;
 import com.example.guardiana.model.Location;
-import com.example.guardiana.objectdetect.DetectorActivity;
+import com.example.guardiana.model.Profile;
 import com.example.guardiana.repository.AddressResponse;
 import com.example.guardiana.utility.DialogOptions;
 import com.example.guardiana.utility.Utility;
@@ -46,6 +50,7 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -71,7 +76,7 @@ public class FragmentSearch extends Fragment {
     private Runnable scrollRunnable;
     private Observer<AddressResponse> addressResponseObserver;
     private LinearLayoutManager layoutManager;
-
+    private boolean isCalibrationActive = true;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -290,7 +295,7 @@ public class FragmentSearch extends Fragment {
                         break;
 
                     case DialogOptions.BottomDialog.SEND_LOCATION:
-                        addressViewModel.sendLocation(requireContext(), addressAdapter.getCurrentList().get(position).getLocation());
+                        addressViewModel.sendLocation(Objects.requireNonNull(getContext()), addressAdapter.getCurrentList().get(position).getLocation());
 
                         break;
                     case DialogOptions.BottomDialog.SET_PRIORITY:
@@ -315,22 +320,34 @@ public class FragmentSearch extends Fragment {
                         favSheetDialog.show(getParentFragmentManager(), "favSheetDialog");
                         break;
                     case DialogOptions.BottomDialog.DRIVE:
-                        startActivity(new Intent(requireActivity(), DetectorActivity.class));
+                        if (isCalibrationActive){
+                            CalibrationDialog calibrationDialog = new CalibrationDialog(getActivity());
+                            calibrationDialog.show();
+                            calibrationDialog.setOnDismissListener(dialog -> {
+                                drive(position, bottomSheetDialog);
+                            });
 
-                        bottomSheetDialog.dismiss();
-                        Bundle bundle = new Bundle();
-                        bundle.putSerializable("location", addressAdapter.getCurrentList().get(position).getLocation());
+                        }else {
+                            drive(position, bottomSheetDialog);
+                        }
 
-                        Fragment fragment_road = getActivity().getSupportFragmentManager().findFragmentByTag("frag_road");
-                        fragment_road.setArguments(bundle);
-                        Fragment fragment_search = getActivity().getSupportFragmentManager().findFragmentByTag("frag_search");
-                        getActivity().getSupportFragmentManager().beginTransaction().hide(fragment_search)
-                                .show(fragment_road).commit();
-                        ((HomeActivity)getActivity()).getChipNavigationBar().setItemSelected(R.id.bottom_nav_map, true);
-                        break;
                 }
             });
         });
+
+    }
+
+    private void drive(int position, BottomSheetMenuDialog bottomSheetDialog) {
+        bottomSheetDialog.dismiss();
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("location", addressAdapter.getCurrentList().get(position).getLocation());
+        Fragment fragment_road = getActivity().getSupportFragmentManager().findFragmentByTag("frag_road");
+        fragment_road.setArguments(bundle);
+        Fragment fragment_search = getActivity().getSupportFragmentManager().findFragmentByTag("frag_search");
+        getActivity().getSupportFragmentManager().beginTransaction().hide(fragment_search)
+                .show(fragment_road).commit();
+        ((HomeActivity)getActivity()).getChipNavigationBar().setItemSelected(R.id.bottom_nav_map, true);
+        return;
     }
 
     //TODO: only for testing
