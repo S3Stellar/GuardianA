@@ -1,5 +1,6 @@
 package com.example.guardiana.objectdetect;
 
+import android.app.Notification;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
@@ -25,6 +26,8 @@ import com.example.lib_interpreter.TFLiteObjectDetectionAPIModel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import ir.zadak.zadaknotify.notification.ZadakNotification;
 
 public class DetectorActivity extends CameraActivity implements OnImageAvailableListener {
     private static final Logger LOGGER = new Logger();
@@ -176,11 +179,20 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                         if (location != null && result.getConfidence() >= minimumConfidence) {
                             if (result.getTitle().equals("person")) {
                                 showAToast("PERSON");
-                                Log.d("PERSON", "PERSON:");
+     /*                           ZadakNotification.with(this)
+                                        .load()
+                                        .notificationChannelId("CHANNEL_ID_PERSON")
+                                        .title("Person")
+                                        .message("Watch out a person close!")
+                                        .bigTextStyle("GA")
+                                        .smallIcon(R.drawable.ic_launcher)
+                                        .largeIcon(R.drawable.ic_launcher)
+                                        .flags(Notification.DEFAULT_ALL)
+                                        .simple()
+                                        .build();*/
                             }
 
                             cropToFrameTransform.mapRect(location);
-
                             result.setLocation(location);
                             mappedRecognitions.add(result);
                         }

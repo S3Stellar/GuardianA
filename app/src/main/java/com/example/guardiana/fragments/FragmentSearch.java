@@ -71,7 +71,7 @@ public class FragmentSearch extends Fragment {
     private Runnable scrollRunnable;
     private Observer<AddressResponse> addressResponseObserver;
     private LinearLayoutManager layoutManager;
-    private boolean isCalibrationActive = false;
+    private boolean isCalibrationActive = true;
 
     @Nullable
     @Override
