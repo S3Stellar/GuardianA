@@ -27,6 +27,7 @@ import com.example.guardiana.customviews.resources.BottomSheetFavoriteResource;
 import com.example.guardiana.databinding.FragmentSearchBinding;
 import com.example.guardiana.dialogs.BottomSheetMenuDialog;
 import com.example.guardiana.dialogs.CalibrationDialog;
+import com.example.guardiana.dialogs.SettingDialog;
 import com.example.guardiana.model.Address;
 import com.example.guardiana.model.Location;
 import com.example.guardiana.objectdetect.DetectorActivity;
@@ -70,14 +71,13 @@ public class FragmentSearch extends Fragment {
     private Runnable scrollRunnable;
     private Observer<AddressResponse> addressResponseObserver;
     private LinearLayoutManager layoutManager;
-    private boolean isCalibrationActive = true;
-
+    private PreferencesManager preferencesManager;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Bind the view to the fragment
         fragmentSearchBinding = FragmentSearchBinding.inflate(getLayoutInflater(), container, false);
-
+        preferencesManager = new PreferencesManager(requireActivity());
         // Setup and initialize the view model to the current fragment
         initViewModel();
 
@@ -99,8 +99,8 @@ public class FragmentSearch extends Fragment {
         // Initialize scroll listener
         initScrollListener();
 
-        //TODO: only for testing
-        testAddPage();
+        // Initialize settings dialog
+        settingsDialog();
 
 
         return fragmentSearchBinding.getRoot();
@@ -318,7 +318,7 @@ public class FragmentSearch extends Fragment {
                         favSheetDialog.show(getParentFragmentManager(), "favSheetDialog");
                         break;
                     case DialogOptions.BottomDialog.DRIVE:
-                        if (isCalibrationActive) {
+                        if (preferencesManager.getCalib()) {
                             CalibrationDialog calibrationDialog = new CalibrationDialog(getActivity());
                             calibrationDialog.show();
                             calibrationDialog.setOnDismissListener(dialog -> drive(position, bottomSheetDialog));
@@ -350,13 +350,11 @@ public class FragmentSearch extends Fragment {
         ((DetectorActivity) getActivity()).getChipNavigationBar().setItemSelected(R.id.bottom_nav_map, true);
     }
 
-    //TODO: only for testing
-    private void testAddPage() {
+    private void settingsDialog() {
 
-        fragmentSearchBinding.addButton.setOnClickListener(v -> {
-            addressViewModel.create(
-                    new Address(App.getUserId(), "address " + count, "lotus" + count++, new Date(), new Location(55, 32), 7)).observe(requireActivity(),
-                    addressResponseObserver);
+        fragmentSearchBinding.settingButton.setOnClickListener(v -> {
+            SettingDialog settingDialog = new SettingDialog(requireActivity());
+            settingDialog.show();
         });
     }
 
