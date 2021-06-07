@@ -21,4 +21,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="camera_error">Camera error</string>
     <string name="tfe_od_camera_error">This device doesn\'t support Camera2 API.</string>
+    <string name="CalibratedSuccess">Calibrated Successfully Ride Safely</string>
+    <string name="TiltBack">Tilt Back</string>
+    <string name="TiltFront">Tilt Front</string>
 </resources>

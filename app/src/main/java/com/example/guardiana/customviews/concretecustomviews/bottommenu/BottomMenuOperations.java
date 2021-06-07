@@ -1,4 +1,4 @@
-package com.example.guardiana.customViews.concretecustomviews.bottommenu;
+package com.example.guardiana.customviews.concretecustomviews.bottommenu;
 
 import androidx.lifecycle.LiveData;
 

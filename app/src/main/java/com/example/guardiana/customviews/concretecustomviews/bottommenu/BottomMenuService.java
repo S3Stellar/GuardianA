@@ -1,4 +1,4 @@
-package com.example.guardiana.customViews.concretecustomviews.bottommenu;
+package com.example.guardiana.customviews.concretecustomviews.bottommenu;
 
 import android.content.Context;
 import android.content.Intent;
@@ -7,17 +7,18 @@ import androidx.lifecycle.LiveData;
 
 import com.example.guardiana.model.Location;
 import com.example.guardiana.repository.AddressResponse;
-import com.example.guardiana.viewmodel.AddressViewModel;
 
 public class BottomMenuService implements BottomMenuOperations {
 
     private final Context context;
-    public BottomMenuService(Context context){
+
+    public BottomMenuService(Context context) {
         this.context = context;
     }
+
     @Override
     public void sendLocation(Location location) {
-        String uri = "http://maps.google.com/maps?saddr=" +location.getLat() + "," + location.getLng();
+        String uri = "http://maps.google.com/maps?saddr=" + location.getLat() + "," + location.getLng();
         Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
         sharingIntent.setType("text/plain");
         String ShareSub = "Here is my location";

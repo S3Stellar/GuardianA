@@ -1,8 +1,8 @@
-package com.example.guardiana.customViews.resources;
+package com.example.guardiana.customviews.resources;
 
 import android.content.Context;
 
-import com.example.guardiana.customViews.AbstractBaseView;
+import com.example.guardiana.customviews.AbstractBaseView;
 
 import java.util.ArrayList;
 import java.util.List;

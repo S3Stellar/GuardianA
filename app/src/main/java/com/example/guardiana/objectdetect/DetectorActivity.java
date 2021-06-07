@@ -1,6 +1,7 @@
 package com.example.guardiana.objectdetect;
 
 import android.content.DialogInterface;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
@@ -17,6 +18,7 @@ import android.view.Gravity;
 import android.widget.Toast;
 
 import com.example.guardiana.R;
+import com.example.guardiana.fragments.FragmentRoad;
 import com.example.guardiana.objectdetect.customview.OverlayView;
 import com.example.guardiana.objectdetect.tracking.MultiBoxTracker;
 import com.example.guardiana.objectdetect.utils.ImageUtils;
@@ -76,6 +78,12 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
 
     @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    }
+
+    @Override
     public void onPreviewSizeChosen(final Size size, final int rotation) {
         tracker = new MultiBoxTracker(this);
         toast = new Toast(getApplicationContext());
@@ -126,8 +134,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 .setDuration(0)
                 .setGravity(Gravity.TOP | CENTER)
                 .setAnimation(DialogAnimation.SHRINK);
-        objectDetectAlertDialog.show();
-        objectDetectAlertDialog.dismiss();
+        //objectDetectAlertDialog.show();
+        //objectDetectAlertDialog.dismiss();
     }
 
     @Override
@@ -166,43 +174,65 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                             minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
                             break;
                     }
-
                     final List<Detector.Recognition> mappedRecognitions =
                             new ArrayList<>();
 
                     for (final Detector.Recognition result : results) {
                         final RectF location = result.getLocation();
-                        if (location != null && result.getConfidence() >= minimumConfidence) {
-                            Log.i("TAG", "DETECT GENERAL");
-                            if (Arrays.asList(detectList).contains(result.getTitle())) {
-                                Log.i("TAG", "DETECT SUCCESS");
-
-                                if (isFirstDialog) {
-                                    isFirstDialog = false;
-                                    showADialog(result.getTitle());
-                                } else {
-                                    if (!objectDetectAlertDialog.getAlertDialog().isShowing())
-                                        showADialog(result.getTitle());
-                                }
-                            }
-
+                        if (location != null && result.getConfidence() >= minimumConfidence && FragmentRoad.isRouteShown) {
+                            filterRecognitionResult(result);
                             cropToFrameTransform.mapRect(location);
                             result.setLocation(location);
                             mappedRecognitions.add(result);
                         }
                     }
-
                     tracker.trackResults(mappedRecognitions, currTimestamp);
                     trackingOverlay.postInvalidate();
                     computingDetection = false;
                 });
     }
 
+    private void filterRecognitionResult(Detector.Recognition result) {
+        switch (result.getTitle()) {
+            case "person":
+                if (result.getLocation().width() < 120 && result.getLocation().height() < 200)
+                    showADialog(result.getTitle());
+                break;
+            case "car":
+                if (result.getLocation().width() < 250 && result.getLocation().height() < 250)
+                    showADialog(result.getTitle());
+                break;
+            case "bicycle":
+                if (result.getLocation().width() < 150 && result.getLocation().height() < 200)
+                    showADialog(result.getTitle());
+                break;
+            default:
+                if (Arrays.asList(detectList).contains(result.getTitle()))
+                    showADialog(result.getTitle());
+/*            case "bus":
+                break;
+            case "motorcycle":
+                break;
+            case "truck":
+                break;
+            case "train":
+                break;*/
+
+        }
+    }
+
 
     public void showADialog(String st) {
-        objectDetectAlertDialog.setMessage("A " + st + " close by watch out!")
-                .setDuration(3000)
-                .show();
+        if (isFirstDialog) {
+            isFirstDialog = false;
+            objectDetectAlertDialog.setMessage("A " + st + " close by watch out!")
+                    .setDuration(3000)
+                    .show();
+        } else if (!objectDetectAlertDialog.getAlertDialog().isShowing()) {
+            objectDetectAlertDialog.setMessage("A " + st + " close by watch out!")
+                    .setDuration(3000)
+                    .show();
+        }
     }
 
     public void showAToast(String st) { //"Toast toast" is declared in the class
@@ -249,5 +279,23 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     @Override
     protected void setNumThreads(final int numThreads) {
         runInBackground(() -> detector.setNumThreads(numThreads));
+    }
+
+    @Override
+    public synchronized void onPause() {
+        super.onPause();
+        isFirstDialog = true;
+    }
+
+    @Override
+    public synchronized void onStop() {
+        super.onStop();
+        isFirstDialog = true;
+    }
+
+    @Override
+    public synchronized void onDestroy() {
+        super.onDestroy();
+        isFirstDialog = true;
     }
 }

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A class to parse the Google Places in JSON format
@@ -74,8 +75,8 @@ public class AsyncParserTask extends AsyncTask<String, Integer, List<List<HashMa
             for (int j = 0; j < path.size(); j++) {
                 HashMap<String, String> point = path.get(j);
 
-                double lat = Double.parseDouble(point.get("lat"));
-                double lng = Double.parseDouble(point.get("lng"));
+                double lat = Double.parseDouble(Objects.requireNonNull(point.get("lat")));
+                double lng = Double.parseDouble(Objects.requireNonNull(point.get("lng")));
                 LatLng position = new LatLng(lat, lng);
 
                 points.add(position);
@@ -100,7 +101,6 @@ public class AsyncParserTask extends AsyncTask<String, Integer, List<List<HashMa
                     .icon(BitmapDescriptorFactory
                             .fromResource(R.drawable.flag)));
     }
-
 }
 
 

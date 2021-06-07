@@ -1,12 +1,12 @@
-package com.example.guardiana.customViews.resources;
+package com.example.guardiana.customviews.resources;
 
 import android.content.Context;
 
 import com.example.guardiana.R;
-import com.example.guardiana.customViews.concretecustomviews.bottommenu.CustomDriveView;
-import com.example.guardiana.customViews.concretecustomviews.bottommenu.CustomFavoriteView;
-import com.example.guardiana.customViews.concretecustomviews.bottommenu.CustomRemoveView;
-import com.example.guardiana.customViews.concretecustomviews.bottommenu.CustomSendLocationView;
+import com.example.guardiana.customviews.concretecustomviews.bottommenu.CustomDriveView;
+import com.example.guardiana.customviews.concretecustomviews.bottommenu.CustomFavoriteView;
+import com.example.guardiana.customviews.concretecustomviews.bottommenu.CustomRemoveView;
+import com.example.guardiana.customviews.concretecustomviews.bottommenu.CustomSendLocationView;
 
 import java.util.Arrays;
 

@@ -18,13 +18,13 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.guardiana.App;
 import com.example.guardiana.R;
+import com.example.guardiana.async.AsyncDownloadTask;
 import com.example.guardiana.clustermap.ReportClusterMarker;
-import com.example.guardiana.customViews.resources.BottomSheetReportResource;
+import com.example.guardiana.customviews.resources.BottomSheetReportResource;
 import com.example.guardiana.fragments.FragmentRoad;
 import com.example.guardiana.model.Element;
 import com.example.guardiana.repository.ElementRepository;
 import com.example.guardiana.repository.ElementResponse;
-import com.example.guardiana.async.AsyncDownloadTask;
 import com.example.guardiana.utility.DialogOptions;
 import com.example.guardiana.utility.Directions;
 import com.example.guardiana.utility.Utility;
@@ -36,8 +36,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.gms.tasks.Task;
 
@@ -54,9 +52,7 @@ public class ElementsViewModel extends AndroidViewModel {
 
     private final ElementRepository elementRepository;
     private final MutableLiveData<Location> locationMutableLiveData = new MutableLiveData<>();
-    private Location lastKnownLocation;
-    private Polyline lastPolyLine;
-    private Marker lastMarker;
+
     public ElementsViewModel(@NonNull @NotNull Application application) {
         super(application);
         elementRepository = ElementRepository.getInstance();
@@ -74,15 +70,6 @@ public class ElementsViewModel extends AndroidViewModel {
     public LiveData<ElementResponse> getAllElementsByLocationFilters(Map<String, String> attr, String sortBy, String sortOrder, int page, int size) {
         return elementRepository.getAllElementsByLocationFilters(attr, sortBy, sortOrder, page, size);
     }
-
-//    public LiveData<ElementResponse> getAllElements(String type, String value, String sortBy, String sortOrder, int page, int size) {
-//        return elementRepository.getAllElementsByFilters(type, value, sortBy, sortOrder, page, size);
-//    }
-
-
-//    public LiveData<ElementResponse> deleteAll() {
-//        return elementRepository.deleteAll();
-//    }
 
     public LiveData<Location> getLocation() {
         return locationMutableLiveData;
@@ -140,15 +127,10 @@ public class ElementsViewModel extends AndroidViewModel {
                         // Start downloading json data from Google Directions API
                         new AsyncDownloadTask(googleMap).execute(url);
 
-                        if (lastMarker != null)
-                            lastMarker.remove();
-                        Log.d(TAG, "onHiddenChanged: " + endLocation.getLat() + " " + endLocation.getLat());
-
                     } else {
                         // Task failed with an exception
                         Exception exception = task.getException();
                         Log.d(TAG, "Exception thrown: " + exception);
-
                     }
                 }));
             }
@@ -185,15 +167,11 @@ public class ElementsViewModel extends AndroidViewModel {
     public void initializeMyLocation(GoogleMap googleMap, Location location) {
         FragmentRoad.lastKnownLocation = location;
         LatLng yourLocation = new LatLng(location.getLatitude(), location.getLongitude());
-        // googleMap.addMarker(new MarkerOptions().position(yourLocation).title("Title").snippet("Marker Description"));
-        // For zooming functionality
-//        CameraPosition currentposition = googleMap.getCameraPosition();
 
         CameraPosition cameraPosition = new CameraPosition
                 .Builder()
                 .target(yourLocation)
-                .zoom(40)
-//                .bearing(currentposition.bearing)
+                .zoom(19)
                 .tilt(30)
                 .build();
         try {
@@ -208,10 +186,5 @@ public class ElementsViewModel extends AndroidViewModel {
             Log.e(TAG, "Can't find style. Error: ", e);
         }
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-    }
-
-    public void removeAllPolyline() {
-        if (lastPolyLine != null)
-            lastPolyLine.remove();
     }
 }

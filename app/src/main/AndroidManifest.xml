@@ -21,14 +21,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GuardianA"
         android:usesCleartextTraffic="true">
-        <activity android:name=".objectdetect.CameraActivity" />
+        <activity android:name=".objectdetect.CameraActivity"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|keyboardHidden"/>
 <!--
         <activity android:name=".objectdetect.DetectorActivity" />
 -->
 
         <activity
             android:name=".objectdetect.DetectorActivity"
-            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|keyboardHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
@@ -36,7 +40,9 @@
 
         <activity
             android:name=".SplashScreen"
-            android:theme="@style/Theme.SplashScreen">
+            android:theme="@style/Theme.SplashScreen"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|keyboardHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -54,8 +60,12 @@
 
         <activity
             android:name=".SignInActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".AppIntroduction" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|keyboardHidden"/>
+        <activity android:name=".AppIntroduction"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|keyboardHidden"/>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

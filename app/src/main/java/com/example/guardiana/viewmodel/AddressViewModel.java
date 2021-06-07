@@ -8,22 +8,12 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
-import com.example.guardiana.customViews.resources.BottomSheetAddressMenuResource;
-import com.example.guardiana.dialogs.BottomSheetMenuDialog;
 import com.example.guardiana.model.Address;
 import com.example.guardiana.model.Location;
 import com.example.guardiana.repository.AddressRepository;
 import com.example.guardiana.repository.AddressResponse;
 import com.example.guardiana.services.AddressOptions;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
-
-import java.util.Calendar;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class AddressViewModel extends AndroidViewModel{
 

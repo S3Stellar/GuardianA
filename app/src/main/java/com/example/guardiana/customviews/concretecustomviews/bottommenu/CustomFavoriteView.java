@@ -1,8 +1,8 @@
-package com.example.guardiana.customViews.concretecustomviews.bottommenu;
+package com.example.guardiana.customviews.concretecustomviews.bottommenu;
 
 import android.content.Context;
 
-import com.example.guardiana.customViews.AbstractBaseView;
+import com.example.guardiana.customviews.AbstractBaseView;
 
 public class CustomFavoriteView extends AbstractBaseView {
 

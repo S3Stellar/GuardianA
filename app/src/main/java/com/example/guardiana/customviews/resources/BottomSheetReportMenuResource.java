@@ -1,11 +1,9 @@
-package com.example.guardiana.customViews.resources;
+package com.example.guardiana.customviews.resources;
 
 import android.content.Context;
-import android.view.View;
-import android.widget.Toast;
 
 import com.example.guardiana.R;
-import com.example.guardiana.customViews.concretecustomviews.favoritemenu.CustomBottomSheetView;
+import com.example.guardiana.customviews.concretecustomviews.favoritemenu.CustomBottomSheetView;
 
 import java.util.Arrays;
 

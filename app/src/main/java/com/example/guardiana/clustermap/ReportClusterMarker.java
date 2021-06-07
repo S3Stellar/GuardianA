@@ -15,7 +15,8 @@ public class ReportClusterMarker implements ClusterItem {
     private LatLng position;
     private int iconPicture;
 
-    public ReportClusterMarker() { }
+    public ReportClusterMarker() {
+    }
 
     public ReportClusterMarker(String snippet, Element element) {
         this.snippet = snippet;

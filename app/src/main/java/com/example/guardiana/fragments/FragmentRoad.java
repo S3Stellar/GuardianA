@@ -21,8 +21,8 @@ import com.example.guardiana.App;
 import com.example.guardiana.R;
 import com.example.guardiana.clustermap.ClusterManagerRender;
 import com.example.guardiana.clustermap.ReportClusterMarker;
-import com.example.guardiana.customViews.resources.BottomSheetReportMenuResource;
-import com.example.guardiana.customViews.resources.BottomSheetReportResource;
+import com.example.guardiana.customviews.resources.BottomSheetReportMenuResource;
+import com.example.guardiana.customviews.resources.BottomSheetReportResource;
 import com.example.guardiana.dialogs.BottomSheetMenuDialog;
 import com.example.guardiana.model.Element;
 import com.example.guardiana.model.ElementCreator;
@@ -161,14 +161,10 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
     @Override
     public void onMapReady(@NotNull GoogleMap googleMap) {
         this.googleMap = googleMap;
-        if (ActivityCompat.checkSelfPermission(requireActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+        if (ActivityCompat.checkSelfPermission(requireActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         googleMap.setOnMapLoadedCallback(() -> {
@@ -236,21 +232,18 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
             @Override
             public void onLocationResult(@NonNull LocationResult locationResult) {
                 super.onLocationResult(locationResult);
-                if(lastKnownLocation != null){
+                if (lastKnownLocation != null) {
                     lastKnownLocation.setLongitude(locationResult.getLastLocation().getLongitude());
                     lastKnownLocation.setLatitude(locationResult.getLastLocation().getLatitude());
                     Log.i(TAG, "onLocationResult: " + lastKnownLocation);
 
                 }
-                // @TODO
-                // Send to server my updated location
-/*
-                userMarkerViewModel.create(new UserMarker(App.getUserId(),
+                // @TODO Send to server my updated location for user' markers sharing
+/*                userMarkerViewModel.create(new UserMarker(App.getUserId(),
                         new com.example.guardiana.model.Location(lastKnownLocation.getLatitude(),
                                 lastKnownLocation.getLongitude()), true, true, R.drawable.bottom_sheet_bicycle));
-*/
 
-  /*              userMarkerViewModel.update(App.getUserId(), new UserMarker(App.getUserId(),
+                userMarkerViewModel.update(App.getUserId(), new UserMarker(App.getUserId(),
                         new com.example.guardiana.model.Location(lastKnownLocation.getLatitude(),
                                 lastKnownLocation.getLongitude()), true, true, R.drawable.bottom_sheet_bicycle));
 
@@ -267,18 +260,17 @@ public class FragmentRoad extends Fragment implements OnMapReadyCallback {
     }
 
 
-
     private void requestCurrentLocation() {
         elementsViewModel.getCurrentLocation(googleMap, fusedLocationClient, cancellationTokenSource, locationCallback);
-        // Request permission
     }
 
     // Method called when Drive button is clicked and route has to be shown
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        Bundle bundle = getArguments();
-        isRouteShown = true;
-        elementsViewModel.showRoute(fusedLocationClient, cancellationTokenSource, bundle, googleMap);
+        if (isRouteShown) {
+            Bundle bundle = getArguments();
+            elementsViewModel.showRoute(fusedLocationClient, cancellationTokenSource, bundle, googleMap);
+        }
     }
 }

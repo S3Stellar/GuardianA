@@ -85,10 +85,14 @@ public abstract class CameraActivity extends AppCompatActivity
         chipNavigationBar.setItemSelected(R.id.bottom_nav_search, true);
         bottomMenu();
 
+
         if (hasPermission()) {
             //setFragment();
             // May test 3/4 thread for optimal performance
             setNumThreads(4);
+            handlerThread = new HandlerThread("inference");
+            handlerThread.start();
+            handler = new Handler(handlerThread.getLooper());
         } else {
             requestPermission();
         }
@@ -148,7 +152,7 @@ public abstract class CameraActivity extends AppCompatActivity
                     camera.addCallbackBuffer(bytes);
                     isProcessingFrame = false;
                 };
-        processImage();
+            processImage();
     }
 
     /**
@@ -183,32 +187,23 @@ public abstract class CameraActivity extends AppCompatActivity
             final int uvPixelStride = planes[1].getPixelStride();
 
             imageConverter =
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            ImageUtils.convertYUV420ToARGB8888(
-                                    yuvBytes[0],
-                                    yuvBytes[1],
-                                    yuvBytes[2],
-                                    previewWidth,
-                                    previewHeight,
-                                    yRowStride,
-                                    uvRowStride,
-                                    uvPixelStride,
-                                    rgbBytes);
-                        }
-                    };
+                    () -> ImageUtils.convertYUV420ToARGB8888(
+                            yuvBytes[0],
+                            yuvBytes[1],
+                            yuvBytes[2],
+                            previewWidth,
+                            previewHeight,
+                            yRowStride,
+                            uvRowStride,
+                            uvPixelStride,
+                            rgbBytes);
 
             postInferenceCallback =
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            image.close();
-                            isProcessingFrame = false;
-                        }
+                    () -> {
+                        image.close();
+                        isProcessingFrame = false;
                     };
-
-            processImage();
+                processImage();
         } catch (final Exception e) {
             LOGGER.e(e, "Exception!");
             Trace.endSection();
@@ -228,37 +223,40 @@ public abstract class CameraActivity extends AppCompatActivity
         LOGGER.d("onResume " + this);
         super.onResume();
 
-        handlerThread = new HandlerThread("inference");
+/*        handlerThread = new HandlerThread("inference");
         handlerThread.start();
-        handler = new Handler(handlerThread.getLooper());
+        handler = new Handler(handlerThread.getLooper());*/
     }
 
     @Override
     public synchronized void onPause() {
         LOGGER.d("onPause " + this);
 
-        handlerThread.quitSafely();
+/*        handlerThread.quitSafely();
         try {
             handlerThread.join();
             handlerThread = null;
             handler = null;
         } catch (final InterruptedException e) {
             LOGGER.e(e, "Exception!");
-        }
+        } */
 
         super.onPause();
+        //getSupportFragmentManager().beginTransaction().hide(fragmentCamera).commit();
     }
 
     @Override
     public synchronized void onStop() {
         LOGGER.d("onStop " + this);
         super.onStop();
+        //getSupportFragmentManager().beginTransaction().hide(fragmentCamera).commit();
     }
 
     @Override
     public synchronized void onDestroy() {
         LOGGER.d("onDestroy " + this);
         super.onDestroy();
+        //getSupportFragmentManager().beginTransaction().hide(fragmentCamera).commit();
     }
 
     protected synchronized void runInBackground(final Runnable r) {

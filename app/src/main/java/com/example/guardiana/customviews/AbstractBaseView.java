@@ -1,4 +1,4 @@
-package com.example.guardiana.customViews;
+package com.example.guardiana.customviews;
 
 import android.content.Context;
 import android.view.View;
@@ -23,12 +23,13 @@ public abstract class AbstractBaseView extends AbstractCustomLayout {
 
     }
 
-    public AbstractBaseView(Context context, int imageResource, String text){
+    public AbstractBaseView(Context context, int imageResource, String text) {
         this(context);
         setImageResource(imageResource);
         setText(text);
 
     }
+
     public void setImageResource(int imageResource) {
         imageView.setImageResource(imageResource);
     }

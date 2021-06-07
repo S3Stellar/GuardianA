@@ -12,18 +12,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
-import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.guardiana.R;
-import com.example.guardiana.customViews.AbstractBaseView;
-import com.example.guardiana.customViews.resources.AbstractBottomSheetResource;
+import com.example.guardiana.customviews.AbstractBaseView;
+import com.example.guardiana.customviews.resources.AbstractBottomSheetResource;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static android.content.ContentValues.TAG;
 
@@ -51,7 +51,7 @@ public class BottomSheetMenuDialog extends BottomSheetDialogFragment {
     @Override
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        getDialog().getWindow()
+        Objects.requireNonNull(getDialog()).getWindow()
                 .getAttributes().windowAnimations = R.style.DialogAnimation;
     }
 
@@ -81,19 +81,19 @@ public class BottomSheetMenuDialog extends BottomSheetDialogFragment {
         }
 
         public Builder setNumberRows(int rows) {
-            if(rows < 0) throw new RuntimeException("Rows cannot be less then 0.");
+            if (rows < 0) throw new RuntimeException("Rows cannot be less then 0.");
             this.rows = rows;
             return this;
         }
 
         public Builder setNumberCols(int cols) {
-            if(cols < 0) throw new RuntimeException("Cols cannot be less then 0.");
+            if (cols < 0) throw new RuntimeException("Cols cannot be less then 0.");
             this.cols = cols;
             return this;
         }
 
         public Builder setResources(AbstractBottomSheetResource resources) {
-            if(resources == null) throw new RuntimeException("Resource list cannot be null.");
+            if (resources == null) throw new RuntimeException("Resource list cannot be null.");
             this.resources = resources;
             return this;
         }
@@ -104,7 +104,8 @@ public class BottomSheetMenuDialog extends BottomSheetDialogFragment {
         }
 
         public BottomSheetMenuDialog build() {
-            if(this.rows * this.cols > resources.getResources().size()) throw new RuntimeException("Incompatible number of resources and grid distribution.");
+            if (this.rows * this.cols > resources.getResources().size())
+                throw new RuntimeException("Incompatible number of resources and grid distribution.");
             return new BottomSheetMenuDialog(this);
         }
     }
@@ -130,7 +131,7 @@ public class BottomSheetMenuDialog extends BottomSheetDialogFragment {
     public int getWindowHeight() {
         // Calculate window height for fullscreen use
         DisplayMetrics displayMetrics = new DisplayMetrics();
-        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         return displayMetrics.heightPixels;
     }
 

@@ -1,10 +1,7 @@
 package com.example.guardiana.dialogs;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.hardware.Sensor;
@@ -13,20 +10,12 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.Handler;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.guardiana.R;
 
-import java.math.RoundingMode;
+import java.text.MessageFormat;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.security.auth.login.LoginException;
-
-import cn.pedant.SweetAlert.SweetAlertDialog;
 
 import static android.content.Context.SENSOR_SERVICE;
 
@@ -35,11 +24,10 @@ public class CalibrationDialog extends Dialog implements SensorEventListener {
     private final SensorManager sensorManager;
     private TextView textView;
     double ax, ay, az;   // these are the acceleration in x,y and z axis
-    private volatile AtomicInteger allSet = new AtomicInteger(0);
+    private final AtomicInteger allSet = new AtomicInteger(0);
     private volatile boolean isCalibrated = false;
     private volatile boolean isRunning = true;
     private volatile boolean isCountdownRunning = false;
-    private Button button;
 
     public CalibrationDialog(Context context) {
         super(context);
@@ -54,8 +42,7 @@ public class CalibrationDialog extends Dialog implements SensorEventListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.calib_dialog);
         textView = findViewById(R.id.calibration_text);
-        button = findViewById(R.id.calibration_button);
-        button.setOnClickListener(v -> dismiss());
+        findViewById(R.id.calibration_button).setOnClickListener(v -> dismiss());
     }
 
 
@@ -63,7 +50,6 @@ public class CalibrationDialog extends Dialog implements SensorEventListener {
     public void onAccuracyChanged(Sensor arg0, int arg1) {
     }
 
-    @SuppressLint("SetTextI18n")
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (isRunning) {
@@ -72,31 +58,27 @@ public class CalibrationDialog extends Dialog implements SensorEventListener {
                 ay = event.values[1];
                 az = event.values[2];
 
-                Log.d("TAG", "onSensorChanged: " + az);
                 if (Math.round(az) < -2.3) {
                     textView.setTextColor(Color.RED);
-                    textView.setText("Tilt Front");
-                    Log.d("TAG", "Tile Forward");
+                    textView.setText(R.string.TiltFront);
                     allSet.set(0);
                 } else if (Math.round(az) > 4.3) {
                     textView.setTextColor(Color.RED);
-                    textView.setText("Tilt Back");
-                    Log.d("TAG", "Tilt Backward");
+                    textView.setText(R.string.TiltBack);
                     allSet.set(0);
                 } else {
 
                     if (!isCountdownRunning) {
-                       // String text = "All set please stay steady for..";
-                        ///textView.setText(text);
                         allSet.incrementAndGet();
                         isCountdownRunning = true;
                         new CountDownTimer(3000, 1000) {
                             int countDown = 3;
+
                             @Override
                             public void onTick(long millisUntilFinished) {
                                 if (allSet.get() != 0) {
                                     textView.setTextColor(Color.GREEN);
-                                    textView.setText("All set please wait..." + countDown--);
+                                    textView.setText(MessageFormat.format("All set please wait...{0}", countDown--));
                                     allSet.incrementAndGet();
                                 }
                             }
@@ -114,7 +96,7 @@ public class CalibrationDialog extends Dialog implements SensorEventListener {
                 }
             }
             if (isCalibrated) {
-                textView.setText("Calibrated Successfully Ride Safely");
+                textView.setText(R.string.CalibratedSuccess);
                 sensorManager.unregisterListener(this);
                 isCalibrated = false;
                 isRunning = false;

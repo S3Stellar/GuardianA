@@ -20,6 +20,7 @@ public class AddressAdapter extends ListAdapter<Address, AddressAdapter.AddressV
 
     private OnItemClickListener onItemClickListener;
     private Context context;
+
     public AddressAdapter() {
         super(DIFF_CALLBACK);
     }
@@ -69,6 +70,7 @@ public class AddressAdapter extends ListAdapter<Address, AddressAdapter.AddressV
         public TextView city;
         public TextView cityAddress;
         public ImageView addressImageView;
+
         public AddressViewHolder(@NonNull View itemView, OnItemClickListener onItemClickListener) {
             super(itemView);
             city = itemView.findViewById(R.id.address_item_text_view_header);
@@ -85,9 +87,9 @@ public class AddressAdapter extends ListAdapter<Address, AddressAdapter.AddressV
         }
     }
 
-    private void setImage(ImageView imageView, int priority){
+    private void setImage(ImageView imageView, int priority) {
         int image;
-        switch(priority) {
+        switch (priority) {
 
             case FavoriteOptions.HOME:
                 image = R.drawable.bottom_sheet_home;

@@ -18,13 +18,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.guardiana.App;
-import com.example.guardiana.HomeActivity;
 import com.example.guardiana.PreferencesManager;
 import com.example.guardiana.R;
 import com.example.guardiana.SignInActivity;
 import com.example.guardiana.adapters.AddressAdapter;
-import com.example.guardiana.customViews.resources.BottomSheetAddressMenuResource;
-import com.example.guardiana.customViews.resources.BottomSheetFavoriteResource;
+import com.example.guardiana.customviews.resources.BottomSheetAddressMenuResource;
+import com.example.guardiana.customviews.resources.BottomSheetFavoriteResource;
 import com.example.guardiana.databinding.FragmentSearchBinding;
 import com.example.guardiana.dialogs.BottomSheetMenuDialog;
 import com.example.guardiana.dialogs.CalibrationDialog;
@@ -214,11 +213,15 @@ public class FragmentSearch extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
-            if (resultCode == RESULT_OK) {
+            if (resultCode == RESULT_OK && data != null) {
                 Place place = Autocomplete.getPlaceFromIntent(data);
                 LatLng latLng = place.getLatLng();
-                double myLat = latLng.latitude;
-                double myLng = latLng.longitude;
+                double myLat = 0;
+                double myLng = 0;
+                if (latLng != null) {
+                    myLat = latLng.latitude;
+                    myLng = latLng.longitude;
+                }
                 String cityName = "";
                 try {
                     List<android.location.Address> addresses = new Geocoder(getContext(), Locale.getDefault()).getFromLocation(myLat, myLng, 1);
@@ -230,8 +233,7 @@ public class FragmentSearch extends Fragment {
                         new Address(App.getUserId(), place.getName(), cityName, new Date(), new Location(myLat, myLng), 7)).observe(requireActivity(),
                         addressResponseObserver);
 
-            } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
-                // TODO: Handle the error.
+            } else if (resultCode == AutocompleteActivity.RESULT_ERROR && data != null) {
                 Status status = Autocomplete.getStatusFromIntent(data);
                 Log.i(TAG, "onActivityResult: " + status.getStatusMessage());
             } else if (resultCode == RESULT_CANCELED) {
@@ -256,11 +258,11 @@ public class FragmentSearch extends Fragment {
     private void setupPowerOffButton() {
         manager = new PreferencesManager(App.getContext());
         fragmentSearchBinding.poweroffButt.setOnClickListener(v -> AuthUI.getInstance()
-                .signOut(getContext())
+                .signOut(requireContext())
                 .addOnCompleteListener(task -> {
                     manager.setLoggedIn(false);
                     startActivity(new Intent(getContext(), SignInActivity.class));
-                    getActivity().finish();
+                    requireActivity().finish();
                 }));
 
     }
@@ -322,7 +324,6 @@ public class FragmentSearch extends Fragment {
                             calibrationDialog.setOnDismissListener(dialog -> drive(position, bottomSheetDialog));
 
                         } else {
-                            //startActivity(new Intent(requireContext(), DetectorActivity.class));
                             drive(position, bottomSheetDialog);
                         }
 
@@ -336,18 +337,17 @@ public class FragmentSearch extends Fragment {
         bottomSheetDialog.dismiss();
         Bundle bundle = new Bundle();
         bundle.putSerializable("location", addressAdapter.getCurrentList().get(position).getLocation());
-        Fragment fragment_road = getActivity().getSupportFragmentManager().findFragmentByTag("frag_road");
-        fragment_road.setArguments(bundle);
-        Fragment fragment_search = getActivity().getSupportFragmentManager().findFragmentByTag("frag_search");
-        Fragment fragment_camera = getActivity().getSupportFragmentManager().findFragmentByTag("frag_camera");
+        Fragment fragmentRoad = getActivity().getSupportFragmentManager().findFragmentByTag("frag_road");
+        fragmentRoad.setArguments(bundle);
+        Fragment fragmentSearch = getActivity().getSupportFragmentManager().findFragmentByTag("frag_search");
+        Fragment fragmentCamera = getActivity().getSupportFragmentManager().findFragmentByTag("frag_camera");
 
-        if (fragment_search != null && fragment_camera != null) {
-            getActivity().getSupportFragmentManager().beginTransaction().hide(fragment_search)
-                    .show(fragment_road).show(fragment_camera).commit();
+        if (fragmentSearch != null && fragmentCamera != null) {
+            FragmentRoad.isRouteShown = true;
+            getActivity().getSupportFragmentManager().beginTransaction().hide(fragmentSearch)
+                    .show(fragmentRoad).show(fragmentCamera).commit();
         }
-
         ((DetectorActivity) getActivity()).getChipNavigationBar().setItemSelected(R.id.bottom_nav_map, true);
-        return;
     }
 
     //TODO: only for testing
