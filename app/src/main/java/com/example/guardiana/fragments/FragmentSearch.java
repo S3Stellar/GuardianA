@@ -102,7 +102,6 @@ public class FragmentSearch extends Fragment {
         //TODO: only for testing
         testAddPage();
 
-
         return fragmentSearchBinding.getRoot();
     }
 

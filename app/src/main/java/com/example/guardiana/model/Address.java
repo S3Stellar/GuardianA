@@ -26,7 +26,8 @@ public class Address {
         this.location = location;
         this.priority = priority;
     }
-    public Address(Address address){
+
+    public Address(Address address) {
         this(address.id, address.user, address.cityAddress, address.cityName, address.createdTimestamp, address.location, address.priority);
     }
 
