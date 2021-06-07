@@ -27,18 +27,27 @@
             <TextView
                 style="@style/homeHeading"
                 android:layout_gravity="center"
-                android:layout_marginTop="10dp"
                 android:text="Calibration"
                 android:textColor="@color/blackTextColor"
-                android:textSize="@dimen/headerTextSize" />
 
+                android:textSize="@dimen/headerTextSize" />
+            <TextView
+                android:id="@+id/calibration_guide"
+                style="@style/learnhubTitleText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Place your phone still to see the road clearly"
+                android:textSize="14dp"
+                android:textStyle="normal"
+                android:layout_marginBottom="15dp"/>
             <TextView
                 android:id="@+id/calibration_text"
                 style="@style/learnhubTitleText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Tile your phone"
+                android:text="Tilt your phone"
                 android:textSize="14dp"
                 android:textStyle="normal" />
 
@@ -48,7 +57,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Close"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="15dp"
                 android:textColor="@color/whiteTextColor"
                 android:background="@drawable/onboarding_button"/>
 

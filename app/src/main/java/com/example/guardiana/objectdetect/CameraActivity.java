@@ -1,6 +1,7 @@
 package com.example.guardiana.objectdetect;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -67,15 +68,14 @@ public abstract class CameraActivity extends AppCompatActivity
     private FragmentRoad fragmentRoad;
     private Fragment fragmentCamera;
 
+    @SuppressLint("SourceLockedOrientationActivity")
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         LOGGER.d("onCreate " + this);
         super.onCreate(null);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-        // setContentView(R.layout.activity_camera);
-
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         setContentView(R.layout.activity_home);
         fragmentRoad = new FragmentRoad();
         fragmentSearch = new FragmentSearch();
@@ -144,12 +144,9 @@ public abstract class CameraActivity extends AppCompatActivity
                 };
 
         postInferenceCallback =
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        camera.addCallbackBuffer(bytes);
-                        isProcessingFrame = false;
-                    }
+                () -> {
+                    camera.addCallbackBuffer(bytes);
+                    isProcessingFrame = false;
                 };
         processImage();
     }
@@ -479,6 +476,8 @@ public abstract class CameraActivity extends AppCompatActivity
                     .setConfirmClickListener(sweetAlertDialog -> {
                         AsyncParserTask.lastPolyLine.remove();
                         AsyncParserTask.targetMarker.remove();
+                        //getSupportFragmentManager().beginTransaction().hide(fragmentCamera).commit();
+                        FragmentRoad.isRouteShown = false;
                         sweetAlertDialog.dismissWithAnimation();
                     })
                     .show();

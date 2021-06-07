@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -70,25 +71,32 @@ public class CalibrationDialog extends Dialog implements SensorEventListener {
                 ax = event.values[0];
                 ay = event.values[1];
                 az = event.values[2];
+
                 Log.d("TAG", "onSensorChanged: " + az);
-                if (Math.round(az) < -2) {
+                if (Math.round(az) < -2.3) {
+                    textView.setTextColor(Color.RED);
                     textView.setText("Tilt Front");
                     Log.d("TAG", "Tile Forward");
                     allSet.set(0);
-                } else if (Math.round(az) > 4) {
+                } else if (Math.round(az) > 4.3) {
+                    textView.setTextColor(Color.RED);
                     textView.setText("Tilt Back");
                     Log.d("TAG", "Tilt Backward");
                     allSet.set(0);
                 } else {
 
                     if (!isCountdownRunning) {
-                        textView.setText("All set please wait...");
+                       // String text = "All set please stay steady for..";
+                        ///textView.setText(text);
                         allSet.incrementAndGet();
                         isCountdownRunning = true;
                         new CountDownTimer(3000, 1000) {
+                            int countDown = 3;
                             @Override
                             public void onTick(long millisUntilFinished) {
                                 if (allSet.get() != 0) {
+                                    textView.setTextColor(Color.GREEN);
+                                    textView.setText("All set please wait..." + countDown--);
                                     allSet.incrementAndGet();
                                 }
                             }
@@ -107,6 +115,7 @@ public class CalibrationDialog extends Dialog implements SensorEventListener {
             }
             if (isCalibrated) {
                 textView.setText("Calibrated Successfully Ride Safely");
+                sensorManager.unregisterListener(this);
                 isCalibrated = false;
                 isRunning = false;
                 isCountdownRunning = false;
@@ -114,7 +123,5 @@ public class CalibrationDialog extends Dialog implements SensorEventListener {
         }
 
     }
-
-
 }
 

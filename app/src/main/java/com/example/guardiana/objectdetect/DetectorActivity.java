@@ -1,6 +1,6 @@
 package com.example.guardiana.objectdetect;
 
-import android.app.Notification;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
@@ -9,10 +9,11 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.media.ImageReader.OnImageAvailableListener;
+import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.Size;
-import android.util.TypedValue;
+import android.view.Gravity;
 import android.widget.Toast;
 
 import com.example.guardiana.R;
@@ -22,12 +23,22 @@ import com.example.guardiana.objectdetect.utils.ImageUtils;
 import com.example.guardiana.objectdetect.utils.Logger;
 import com.example.lib_interpreter.Detector;
 import com.example.lib_interpreter.TFLiteObjectDetectionAPIModel;
+import com.thecode.aestheticdialogs.AestheticDialog;
+import com.thecode.aestheticdialogs.DialogAnimation;
+import com.thecode.aestheticdialogs.DialogStyle;
+import com.thecode.aestheticdialogs.DialogType;
+import com.thecode.aestheticdialogs.OnDialogClickListener;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import ir.zadak.zadaknotify.notification.ZadakNotification;
+import kotlin.UninitializedPropertyAccessException;
+
+import static android.view.Gravity.CENTER;
 
 public class DetectorActivity extends CameraActivity implements OnImageAvailableListener {
     private static final Logger LOGGER = new Logger();
@@ -43,16 +54,12 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static final boolean MAINTAIN_ASPECT = false;
     private static final Size DESIRED_PREVIEW_SIZE = new Size(640, 480);
     private static final boolean SAVE_PREVIEW_BITMAP = false;
-    private static final float TEXT_SIZE_DIP = 10;
     OverlayView trackingOverlay;
-    private Integer sensorOrientation;
 
     private Detector detector;
 
-    private long lastProcessingTimeMs;
     private Bitmap rgbFrameBitmap = null;
     private Bitmap croppedBitmap = null;
-    private Bitmap cropCopyBitmap = null;
 
     private boolean computingDetection = false;
 
@@ -63,13 +70,13 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     private MultiBoxTracker tracker;
     private Toast toast;
+    private final String[] detectList = {"car", "person", "bicycle", "bus", "motorcycle", "truck", "train"};
+    private AestheticDialog.Builder objectDetectAlertDialog;
+    private boolean isFirstDialog = true;
+
 
     @Override
     public void onPreviewSizeChosen(final Size size, final int rotation) {
-        final float textSizePx =
-                TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE_DIP, getResources().getDisplayMetrics());
-
         tracker = new MultiBoxTracker(this);
         toast = new Toast(getApplicationContext());
 
@@ -86,21 +93,15 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             cropSize = TF_OD_API_INPUT_SIZE;
         } catch (final IOException e) {
             e.printStackTrace();
-            LOGGER.e(e, "Exception initializing Detector!");
-            Toast toast =
-                    Toast.makeText(
-                            getApplicationContext(), "Detector could not be initialized", Toast.LENGTH_SHORT);
-            toast.show();
+            showAToast("Detector could not be initialized");
             finish();
         }
 
         previewWidth = size.getWidth();
         previewHeight = size.getHeight();
 
-        sensorOrientation = rotation - getScreenOrientation();
-        LOGGER.i("Camera orientation relative to screen canvas: %d", sensorOrientation);
+        int sensorOrientation = rotation - getScreenOrientation();
 
-        LOGGER.i("Initializing at size %dx%d", previewWidth, previewHeight);
         rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Config.ARGB_8888);
         croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Config.ARGB_8888);
 
@@ -114,15 +115,19 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         frameToCropTransform.invert(cropToFrameTransform);
 
         trackingOverlay = findViewById(R.id.tracking_overlay);
-        trackingOverlay.addCallback(
-                canvas -> {
-                    //tracker.draw(canvas);
-                    if (isDebug()) {
-                        //tracker.drawDebug(canvas);
-                    }
-                });
-
+        trackingOverlay.addCallback(canvas -> {
+        });
         tracker.setFrameConfiguration(previewWidth, previewHeight, sensorOrientation);
+
+        objectDetectAlertDialog = new AestheticDialog.Builder(this, DialogStyle.TOASTER, DialogType.WARNING)
+                .setTitle("")
+                .setCancelable(false)
+                .setDarkMode(true)
+                .setDuration(0)
+                .setGravity(Gravity.TOP | CENTER)
+                .setAnimation(DialogAnimation.SHRINK);
+        objectDetectAlertDialog.show();
+        objectDetectAlertDialog.dismiss();
     }
 
     @Override
@@ -152,17 +157,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         runInBackground(
                 () -> {
-                    //LOGGER.i("Running detection on image " + currTimestamp);
-                    final long startTime = SystemClock.uptimeMillis();
                     final List<Detector.Recognition> results = detector.recognizeImage(croppedBitmap);
-                    lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
-
-                    cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
-                    final Canvas canvas1 = new Canvas(cropCopyBitmap);
-                    final Paint paint = new Paint();
-                    paint.setColor(Color.RED);
-                    paint.setStyle(Paint.Style.STROKE);
-                    paint.setStrokeWidth(2.0f);
+                    //cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
 
                     float minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
                     switch (MODE) {
@@ -177,21 +173,17 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     for (final Detector.Recognition result : results) {
                         final RectF location = result.getLocation();
                         if (location != null && result.getConfidence() >= minimumConfidence) {
-                            Log.i("TAG", "" + Thread.currentThread());
-                            if (result.getTitle().equals("person")) {
-                                Log.i("TAG", "PERSON DETECTED ");
-                                showAToast("PERSON");
-                                ZadakNotification.with(this)
-                                        .load()
-                                        .notificationChannelId("CHANNEL_ID_PERSON")
-                                        .title("Person")
-                                        .message("Watch out a person close!")
-                                        .bigTextStyle("GA")
-                                        .smallIcon(R.drawable.ic_launcher)
-                                        .largeIcon(R.drawable.ic_launcher)
-                                        .flags(Notification.DEFAULT_ALL)
-                                        .simple()
-                                        .build();
+                            Log.i("TAG", "DETECT GENERAL");
+                            if (Arrays.asList(detectList).contains(result.getTitle())) {
+                                Log.i("TAG", "DETECT SUCCESS");
+
+                                if (isFirstDialog) {
+                                    isFirstDialog = false;
+                                    showADialog(result.getTitle());
+                                } else {
+                                    if (!objectDetectAlertDialog.getAlertDialog().isShowing())
+                                        showADialog(result.getTitle());
+                                }
                             }
 
                             cropToFrameTransform.mapRect(location);
@@ -202,21 +194,24 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                     tracker.trackResults(mappedRecognitions, currTimestamp);
                     trackingOverlay.postInvalidate();
-
                     computingDetection = false;
                 });
     }
 
-    public void showAToast(String st) { //"Toast toast" is declared in the class
-            try {
-                toast = Toast.makeText(this, st, Toast.LENGTH_SHORT);
-                computingDetection = false;
-                Thread.sleep(5000);
-                computingDetection = true;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
 
+    public void showADialog(String st) {
+        objectDetectAlertDialog.setMessage("A " + st + " close by watch out!")
+                .setDuration(3000)
+                .show();
+    }
+
+    public void showAToast(String st) { //"Toast toast" is declared in the class
+        try {
+            toast.getView().isShown();     // true if visible
+            toast.setText(st);
+        } catch (Exception e) {         // invisible if exception
+            toast = Toast.makeText(this, st, Toast.LENGTH_SHORT);
+        }
         toast.show();  //finally display it
     }
 
@@ -246,9 +241,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     } catch (UnsupportedOperationException e) {
                         LOGGER.e(e, "Failed to set \"Use NNAPI\".");
                         runOnUiThread(
-                                () -> {
-                                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
-                                });
+                                () -> showAToast(e.getMessage()));
                     }
                 });
     }
