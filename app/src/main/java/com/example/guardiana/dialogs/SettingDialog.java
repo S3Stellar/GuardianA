@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 
 import com.example.guardiana.PreferencesManager;
 import com.example.guardiana.R;
+import com.example.guardiana.objectdetect.DetectorActivity;
 
 import java.util.Objects;
 
@@ -47,8 +48,10 @@ public class SettingDialog extends Dialog {
             if (isChecked) {
                 // checked is on
                 preferencesManager.setSens("HIGH");
+                DetectorActivity.SENSITIVITY = "HIGH";
             } else {
                 // checked is off
+                DetectorActivity.SENSITIVITY = "LOW";
                 preferencesManager.setSens("LOW");
             }
         });

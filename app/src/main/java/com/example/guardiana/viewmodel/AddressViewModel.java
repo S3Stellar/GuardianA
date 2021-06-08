@@ -15,7 +15,7 @@ import com.example.guardiana.repository.AddressRepository;
 import com.example.guardiana.repository.AddressResponse;
 import com.example.guardiana.services.AddressOptions;
 
-public class AddressViewModel extends AndroidViewModel{
+public class AddressViewModel extends AndroidViewModel {
 
     private final AddressRepository addressRepository;
 
@@ -42,7 +42,7 @@ public class AddressViewModel extends AndroidViewModel{
     }
 
     public void sendLocation(Context context, Location location) {
-        String uri = "http://maps.google.com/maps?saddr=" +location.getLat() + "," + location.getLng();
+        String uri = "http://maps.google.com/maps?saddr=" + location.getLat() + "," + location.getLng();
         Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
         sharingIntent.setType("text/plain");
         String ShareSub = "Here is my location";

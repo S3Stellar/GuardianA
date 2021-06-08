@@ -3,7 +3,6 @@ package com.example.guardiana;
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.util.Log;
 
 import com.google.android.libraries.places.api.Places;
 import com.google.firebase.auth.FirebaseAuth;
@@ -31,7 +30,6 @@ public class App extends Application {
 
         if (currentUser != null) {
             userId = currentUser.getEmail() != null && !currentUser.getEmail().isEmpty() ? currentUser.getEmail() : currentUser.getPhoneNumber();
-
             manager.setLoggedIn(true);
         } else {
             manager.setLoggedIn(false);

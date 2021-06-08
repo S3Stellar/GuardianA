@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:text="Settings"
-        android:textColor="@color/background"
+        android:textColor="@color/black"
         android:textSize="20sp"
         android:textStyle="bold"
         tools:ignore="PrivateResource" />
@@ -51,6 +51,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.1"
+                android:text="LOW/HIGH"
+                android:textSize="10sp"
                 tools:ignore="UseSwitchCompatOrMaterialXml" />
         </LinearLayout>
     </LinearLayout>
@@ -81,6 +83,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.1"
+                android:textSize="10sp"
+                android:text="OFF/ON"
                 tools:ignore="UseSwitchCompatOrMaterialXml" />
         </LinearLayout>
     </LinearLayout>

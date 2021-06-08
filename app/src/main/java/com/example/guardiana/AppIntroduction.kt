@@ -22,7 +22,6 @@ class AppIntroduction : AppIntro() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         manager = PreferencesManager(this)
 
         if (manager.isFirstRun()) {

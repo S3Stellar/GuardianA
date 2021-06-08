@@ -53,10 +53,11 @@ public class SignInActivity extends Activity {
     private FirebaseAuth mAuth;
     private long pressTime = 0;
     private ProfileFirebaseRepository profileFirebaseRepository;
-    private UserMarkerRepository userMarkerRepository;
+    //private UserMarkerRepository userMarkerRepository;
     private Vibrator mVibrator;
     private Toast toast;
     private ProgressBar progressBar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,11 +67,11 @@ public class SignInActivity extends Activity {
         email = findViewById(R.id.editTextEmail);
         password = findViewById(R.id.editTextPassword);
         mAuth = FirebaseAuth.getInstance();
-        userMarkerRepository = UserMarkerRepository.getInstance();
+        //userMarkerRepository = UserMarkerRepository.getInstance();
         mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         toast = new Toast(getApplicationContext());
 
-        progressBar = (ProgressBar)findViewById(R.id.loadingBar);
+        progressBar = findViewById(R.id.loadingBar);
         progressBar.setIndeterminateDrawable(new ThreeBounce());
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -84,7 +85,7 @@ public class SignInActivity extends Activity {
 
     // Activate listeners
     private void setListeners() {
-        findViewById(R.id.cirLoginButton).setOnClickListener(v -> onLoginClick(v));
+        findViewById(R.id.cirLoginButton).setOnClickListener(this::onLoginClick);
 
         findViewById(R.id.google_butt).setOnClickListener(v -> {
             mVibrator.vibrate(80);
@@ -103,7 +104,6 @@ public class SignInActivity extends Activity {
         AuthMethodPickerLayout customLayout = new AuthMethodPickerLayout
                 .Builder(R.layout.activity_sign_in)
                 .setPhoneButtonId(R.id.phone_butt)
-                // ...
                 .build();
 
         // Create and launch sign-in intent
@@ -128,7 +128,7 @@ public class SignInActivity extends Activity {
             mAuth.sendPasswordResetEmail(email.getText().toString())
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                           showAToast("Check your email box!");
+                            showAToast("Check your email box!");
                             Log.d("TAG", "Email sent.");
                         }
                     });
@@ -142,8 +142,6 @@ public class SignInActivity extends Activity {
         AuthMethodPickerLayout customLayout = new AuthMethodPickerLayout
                 .Builder(R.layout.activity_sign_in)
                 .setEmailButtonId(R.id.reg_now)
-
-                // ...
                 .build();
 
         // Create and launch sign-in intent
@@ -240,7 +238,7 @@ public class SignInActivity extends Activity {
                         }
                     } else {
                         // If sign in fails, display a message to the user.
-                       showAToast("Wrong email or password.");
+                        showAToast("Wrong email or password.");
                     }
                     progressBar.setVisibility(View.INVISIBLE);
                 });

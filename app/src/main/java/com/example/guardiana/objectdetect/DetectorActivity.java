@@ -1,22 +1,18 @@
 package com.example.guardiana.objectdetect;
 
-import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.graphics.RectF;
 import android.media.ImageReader.OnImageAvailableListener;
 import android.os.Bundle;
-import android.os.SystemClock;
-import android.util.Log;
 import android.util.Size;
 import android.view.Gravity;
 import android.widget.Toast;
 
+import com.example.guardiana.PreferencesManager;
 import com.example.guardiana.R;
 import com.example.guardiana.fragments.FragmentRoad;
 import com.example.guardiana.objectdetect.customview.OverlayView;
@@ -29,16 +25,11 @@ import com.thecode.aestheticdialogs.AestheticDialog;
 import com.thecode.aestheticdialogs.DialogAnimation;
 import com.thecode.aestheticdialogs.DialogStyle;
 import com.thecode.aestheticdialogs.DialogType;
-import com.thecode.aestheticdialogs.OnDialogClickListener;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import kotlin.UninitializedPropertyAccessException;
 
 import static android.view.Gravity.CENTER;
 
@@ -52,7 +43,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private static final String TF_OD_API_LABELS_FILE = "labelmap.txt";
     private static final DetectorMode MODE = DetectorMode.TF_OD_API;
     // Minimum detection confidence to track a detection.
-    private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.58f;
+    private static final float MIN_HIGH_SENS_CONFIDENCE = 0.54f;
+    private static final float MIN_LOW_SENS_CONFIDENCE = 0.58f;
+
     private static final boolean MAINTAIN_ASPECT = false;
     private static final Size DESIRED_PREVIEW_SIZE = new Size(640, 480);
     private static final boolean SAVE_PREVIEW_BITMAP = false;
@@ -75,12 +68,16 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     private final String[] detectList = {"car", "person", "bicycle", "bus", "motorcycle", "truck", "train"};
     private AestheticDialog.Builder objectDetectAlertDialog;
     private boolean isFirstDialog = true;
+    private PreferencesManager manager;
+    public static String SENSITIVITY = "LOW";
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        manager = new PreferencesManager(this);
+        SENSITIVITY = manager.getSens();
     }
 
     @Override
@@ -166,21 +163,16 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         runInBackground(
                 () -> {
                     final List<Detector.Recognition> results = detector.recognizeImage(croppedBitmap);
-                    //cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
-
-                    float minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
-                    switch (MODE) {
-                        case TF_OD_API:
-                            minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
-                            break;
-                    }
                     final List<Detector.Recognition> mappedRecognitions =
                             new ArrayList<>();
 
                     for (final Detector.Recognition result : results) {
                         final RectF location = result.getLocation();
-                        if (location != null && result.getConfidence() >= minimumConfidence && FragmentRoad.isRouteShown) {
-                            filterRecognitionResult(result);
+                        if (location != null && FragmentRoad.isRouteShown) {
+                            if (SENSITIVITY.equals("HIGH") && result.getConfidence() >= MIN_HIGH_SENS_CONFIDENCE)
+                                filterRecognitionResultByHighSens(result);
+                            else if (result.getConfidence() >= MIN_LOW_SENS_CONFIDENCE)
+                                filterRecognitionResultByLowSens(result);
                             cropToFrameTransform.mapRect(location);
                             result.setLocation(location);
                             mappedRecognitions.add(result);
@@ -192,7 +184,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 });
     }
 
-    private void filterRecognitionResult(Detector.Recognition result) {
+    private void filterRecognitionResultByLowSens(Detector.Recognition result) {
         switch (result.getTitle()) {
             case "person":
                 if (result.getLocation().width() < 120 && result.getLocation().height() < 200)
@@ -209,18 +201,28 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             default:
                 if (Arrays.asList(detectList).contains(result.getTitle()))
                     showADialog(result.getTitle());
-/*            case "bus":
-                break;
-            case "motorcycle":
-                break;
-            case "truck":
-                break;
-            case "train":
-                break;*/
-
         }
     }
 
+    private void filterRecognitionResultByHighSens(Detector.Recognition result) {
+        switch (result.getTitle()) {
+            case "person":
+                if (result.getLocation().width() < 150 && result.getLocation().height() < 220)
+                    showADialog(result.getTitle());
+                break;
+            case "car":
+                if (result.getLocation().width() < 270 && result.getLocation().height() < 280)
+                    showADialog(result.getTitle());
+                break;
+            case "bicycle":
+                if (result.getLocation().width() < 170 && result.getLocation().height() < 240)
+                    showADialog(result.getTitle());
+                break;
+            default:
+                if (Arrays.asList(detectList).contains(result.getTitle()) && result.getLocation().width() < 250 && result.getLocation().height() < 250)
+                    showADialog(result.getTitle());
+        }
+    }
 
     public void showADialog(String st) {
         if (isFirstDialog) {

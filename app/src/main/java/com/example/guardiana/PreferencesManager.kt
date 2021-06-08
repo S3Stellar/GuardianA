@@ -7,13 +7,8 @@ import android.content.SharedPreferences
 class PreferencesManager @SuppressLint("CommitPrefEdits")
 constructor(context: Context) {
 
-    private val preferences: SharedPreferences
-    private val editor: SharedPreferences.Editor
-
-    init {
-        preferences = context.getSharedPreferences(PREFERENCE_CONFIGURATION_NAME, PRIVATE_MODE)
-        editor = preferences.edit()
-    }
+    private val preferences: SharedPreferences = context.getSharedPreferences(PREFERENCE_CONFIGURATION_NAME, PRIVATE_MODE)
+    private val editor: SharedPreferences.Editor = preferences.edit()
 
     fun isFirstRun() = preferences.getBoolean(FIRST_TIME, true)
 
@@ -39,7 +34,7 @@ constructor(context: Context) {
 
     fun getCalib() = preferences.getBoolean(CALIB, true)
 
-    fun getSens() = preferences.getString(SENS, "HIGH")
+    fun getSens() = preferences.getString(SENS, "LOW")
 
     companion object {
         private const val PRIVATE_MODE = 0
@@ -48,7 +43,5 @@ constructor(context: Context) {
         private const val LOGGED_IN = "isLoggedIn"
         private const val SENS = "SENS"
         private const val CALIB = "CALIB"
-
-
     }
 }
