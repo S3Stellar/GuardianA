@@ -32,8 +32,13 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
+            shrinkResources false
         }
     }
     compileOptions {
@@ -41,12 +46,22 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    dependencies {
-        implementation 'org.tensorflow:tensorflow-android:1.6.0'
-    }
+    // TensorFlow dependencies moved to main dependencies block for better management
 
     aaptOptions {
         noCompress "tflite"
+    }
+
+    bundle {
+        language {
+            enableSplit = true
+        }
+        density {
+            enableSplit = true
+        }
+        abi {
+            enableSplit = true
+        }
     }
 
     // Interpreter 52 - 66
@@ -146,8 +161,9 @@ dependencies {
     // Route between two points
     implementation 'com.github.jd-alexander:library:1.1.0'
 
-    // TF Lite
-    implementation 'org.tensorflow:tensorflow-lite:2.4.0'
+    // TensorFlow Lite (unified version)
+    implementation 'org.tensorflow:tensorflow-lite:2.8.0'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.8.0'
 
     // TF Lite module library
     implementation project(path: ':lib_interpreter')
